@@ -268,7 +268,7 @@ func (s *Service) SearchUsers(w http.ResponseWriter, r *http.Request) {
 //		w.Header().Set("Content-Type", "application/json")
 //		json.NewEncoder(w).Encode(statistics)
 //	}
-func CheckEmail(newUser *User) string {
+func EmailVerificationToken(email string) string {
 	token := make([]byte, 32)
 	_, err := rand.Read(token)
 	if err != nil {
@@ -284,13 +284,12 @@ func CheckEmail(newUser *User) string {
 			"token": {confirmToken},
 		}.Encode(),
 	}
-	to := newUser.Email
 	subject := "Confirment your email"
 	body := fmt.Sprintf("Confirment email: click this link:\n%s", confirmURL.String())
 
 	auth := smtp.PlainAuth("", "your email", "password", "your site/token")
 
-	err = smtp.SendMail("your email:587", auth, "your site/token", []string{to}, []byte(fmt.Sprintf("Subject: %s\n\n%s", subject, body)))
+	err = smtp.SendMail("your email:587", auth, "your site/token", []string{email}, []byte(fmt.Sprintf("Subject: %s\n\n%s", subject, body)))
 	if err != nil {
 		return ""
 	}

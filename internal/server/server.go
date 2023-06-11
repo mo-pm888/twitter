@@ -21,7 +21,7 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service,
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", func(w http.ResponseWriter, r *http.Request) {
-		s.Create(w, r, validator)
+		s.Create(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/login", s.LogIn).Methods(http.MethodPost)
 	//http.Handle("/v1/users/logout", users.AuthHandler(http.HandlerFunc(s.LogOut)))

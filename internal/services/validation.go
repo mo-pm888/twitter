@@ -49,20 +49,7 @@ func (s *Services) Error() string {
 }
 
 func (s *Services) RegisterValidations(userValid *Services) error {
-	err := userValid.Validate.RegisterValidation("checkPassword", func(fl validator.FieldLevel) bool {
-		return s.CheckPassword(fl)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.Validate.RegisterValidation("checkName", func(fl validator.FieldLevel) bool {
-		return s.CheckName(fl)
-	})
-	if err != nil {
-		return err
-	}
-
-	err = userValid.Validate.RegisterValidation("checkDate", func(fl validator.FieldLevel) bool {
+	err := userValid.Validate.RegisterValidation("checkDate", func(fl validator.FieldLevel) bool {
 		return s.CheckDate(fl)
 	})
 	if err != nil {
@@ -104,7 +91,7 @@ func (s *Services) RegisterValidations(userValid *Services) error {
 var (
 	commonWords = []string{"password", "12345678", "87654321", "qwerty123"}
 	sequences   = []string{"123", "abc", "xyz"}
-	nameRegex   = regexp.MustCompile("^[\\p{L}\\s]+$")
+	NameRegex   = regexp.MustCompile("^[\\p{L}\\s]+$")
 )
 
 func HasDigit(password string) bool {
@@ -149,33 +136,25 @@ func HasSpecialChar(password string) bool {
 	}
 	return false
 }
-func (s *Services) CheckPassword(fl validator.FieldLevel) bool {
+func CheckPassword(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
-	if len(password) < minNameLength {
-		s.ValidErr["password"] += "short,"
-		return false
-	}
-	if len(password) > maxNameLength {
-		s.ValidErr["password"] += "long,"
-		return false
-	}
-
+	errorsMap := make(map[string]string)
 	if !HasUpper(password) {
-		s.ValidErr["password"] += "uppercase,"
+		errorsMap["password"] += "uppercase,"
 	}
 	if !HasSpecialChar(password) {
-		s.ValidErr["password"] += "special character,"
+		errorsMap["password"] += "special character,"
 	}
 	if !HasDigit(password) {
-		s.ValidErr["password"] += "digit,"
+		errorsMap["password"] += "digit,"
 	}
 	if HasSequence(password) {
-		s.ValidErr["password"] += "sequence,"
+		errorsMap["password"] += "sequence,"
 	}
 	if HasCommonWord(password) {
-		s.ValidErr["password"] += "common word,"
+		errorsMap["password"] += "common word,"
 	}
-	return len(s.ValidErr) == 0
+	return len(errorsMap) == 0
 }
 
 func (s *Services) CheckDate(fl validator.FieldLevel) bool {
@@ -191,25 +170,6 @@ func (s *Services) CheckDate(fl validator.FieldLevel) bool {
 		return true
 	}
 
-	return true
-}
-
-func (s *Services) CheckName(fl validator.FieldLevel) bool {
-	name := fl.Field().String()
-	u := NameVal{}
-	if len(name) > maxNameLength {
-		s.ValidErr["name"] += "long name,"
-		u.long = true
-	}
-	match := nameRegex.MatchString(name)
-	if match == false {
-		s.ValidErr["name"] += "digit or special character,"
-		u.realName = true
-	}
-
-	if u.long || u.realName {
-		return false
-	}
 	return true
 }
 
