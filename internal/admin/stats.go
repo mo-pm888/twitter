@@ -8,24 +8,20 @@ import (
 )
 
 type counts struct {
-	countTweets int
-	countUsers  int
+	CountTweets int `json:"tweets"`
+	CountUsers  int `json:"users"`
 }
 
 func Stats(w http.ResponseWriter, r *http.Request) {
-	if r.Context().Value("isAdmin").(bool) == true {
-		var allCounts counts
-		err := pg.DB.QueryRow("SELECT COUNT(*) FROM users_tweeter").Scan(&allCounts.countUsers)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		err = pg.DB.QueryRow("SELECT COUNT(*) FROM tweets").Scan(&allCounts.countTweets)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		}
-		services.ReturnJSON(w, http.StatusOK, allCounts)
-	} else {
-		services.ReturnJSON(w, http.StatusUnauthorized, "You aren't an administrator")
+	var allCounts counts
+	err := pg.DB.QueryRow("SELECT COUNT(*) FROM users_tweeter").Scan(&allCounts.CountUsers)
+	if err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	err = pg.DB.QueryRow("SELECT COUNT(*) FROM tweets").Scan(&allCounts.CountTweets)
+	if err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+	}
+	services.ReturnJSON(w, http.StatusOK, allCounts)
 }

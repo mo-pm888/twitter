@@ -1,20 +1,26 @@
 package users
 
 import (
-	_ "Twitter_like_application/internal/database/pg"
-	pg "Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/gorilla/mux"
 	"net/http"
 	"net/smtp"
 	"net/url"
 	"strings"
+
+	"Twitter_like_application/internal/database/pg"
+	"Twitter_like_application/internal/services"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gorilla/mux"
+)
+
+const (
+	ctxKeyUserID  = "userID"
+	ctxKeyIsAdmin = "isAdmin"
 )
 
 type UserValid struct {
@@ -36,12 +42,12 @@ func (v *UserValid) Error() string {
 	return strings.Join(pairs, "; ")
 }
 
-func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next http.Handler) {
+func checkAuth(w http.ResponseWriter, r *http.Request) *http.Request {
 	apikey := r.Header.Get("X-API-KEY")
 	cookie, err := r.Cookie("session")
 	if apikey == "" && (err != nil || cookie == nil) {
 		services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
-		return
+		return nil
 	}
 	var sessionID string
 	if apikey != "" {
@@ -49,69 +55,28 @@ func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next htt
 	} else if cookie != nil {
 		sessionID = cookie.Value
 	}
-	if cookie != nil || apikey != "" {
-		query := "SELECT user_id FROM user_session WHERE login_token = $1"
-		var userID int
-		err = pg.DB.QueryRow(query, sessionID).Scan(&userID)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		query = "SELECT admin FROM users_tweeter WHERE id = $1"
-		var isAdmin bool
-		err = pg.DB.QueryRow(query, userID).Scan(&isAdmin)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), "userID", userID)
-		ctx = context.WithValue(ctx, "isAdmin", isAdmin)
-		r = r.WithContext(ctx)
-
-	} else {
+	if sessionID == "" {
 		services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
-		return
+		return nil
 	}
+	query := `SELECT us.user_id, ut.admin FROM user_session us JOIN users_tweeter ut ON us.user_id = ut.id WHERE us.session_id = $1 LIMIT 1`
 
-	next.ServeHTTP(w, r)
-}
-func handleAuthenticatedRequestAdmin(w http.ResponseWriter, r *http.Request, next http.Handler) {
-	apikey := r.Header.Get("X-API-KEY")
-	cookie, err := r.Cookie("session")
-	if apikey == "" && (err != nil || cookie == nil) {
-		services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
-		return
+	var userID int
+	var isAdmin bool
+	err = pg.DB.QueryRow(query, sessionID).Scan(&userID, &isAdmin)
+	if err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+		return nil
 	}
-	var sessionID string
-	if apikey != "" {
-		sessionID = apikey
-	} else if cookie != nil {
-		sessionID = cookie.Value
-	}
-	if cookie != nil || apikey != "" {
-		query := `SELECT us.user_id, ut.admin FROM user_session us JOIN users_tweeter ut ON us.user_id = ut.id WHERE us.session_id = $1`
-
-		var userID int
-		var isAdmin bool
-		err = pg.DB.QueryRow(query, sessionID).Scan(&userID, &isAdmin)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), "userID", userID)
-		ctx = context.WithValue(r.Context(), "isAdmin", isAdmin)
-		r = r.WithContext(ctx)
-
-	}
-
+	ctx := context.WithValue(r.Context(), ctxKeyUserID, userID)
+	ctx = context.WithValue(ctx, ctxKeyIsAdmin, isAdmin)
+	return r.WithContext(ctx)
 }
 
 func AuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handleAuthenticatedRequest(w, r, next)
-		if r.Context().Value("userID").(string) != "" {
+		r = checkAuth(w, r)
+		if v, ok := r.Context().Value(ctxKeyUserID).(string); ok && v != "" {
 			next.ServeHTTP(w, r)
 		} else {
 			services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
@@ -119,10 +84,11 @@ func AuthHandler(next http.Handler) http.Handler {
 
 	})
 }
+
 func AdminAuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handleAuthenticatedRequestAdmin(w, r, next)
-		if r.Context().Value("isAdmin").(string) != "" {
+		r = checkAuth(w, r)
+		if v, ok := r.Context().Value(ctxKeyIsAdmin).(bool); ok && v {
 			next.ServeHTTP(w, r)
 		} else {
 			services.ReturnErr(w, "Unauthorized as an admin", http.StatusUnauthorized)
