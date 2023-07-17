@@ -71,15 +71,15 @@ func CheckPassword(fl validator.FieldLevel, v *UserValid) bool {
 		}
 	}
 
-	if !HasDigit(password) == false {
+	if HasDigit(password) {
 		hasDigit = true
 	}
 
-	if HasSequence(password) == false {
+	if HasSequence(password) {
 		hasSequence = true
 	}
 
-	if HasCommonWord(password) == false {
+	if HasCommonWord(password) {
 		hasCommonWord = true
 	}
 	if hasUpperCase == false {
@@ -104,7 +104,7 @@ func CheckPassword(fl validator.FieldLevel, v *UserValid) bool {
 	return true
 }
 
-func CheckDateTime(fl validator.FieldLevel, v *UserValid) bool {
+func CheckDate(fl validator.FieldLevel, v *UserValid) bool {
 	dateStr := fl.Field().String()
 	date, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {

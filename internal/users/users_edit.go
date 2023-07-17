@@ -18,6 +18,7 @@ func EditProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	updatedProfile := EditUserRequest{}
 	if err := RegisterUsersValidations(userValid); err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	err := json.NewDecoder(r.Body).Decode(&updatedProfile)
@@ -32,15 +33,8 @@ func EditProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := map[string]interface{}{
-		"status":  "success",
-		"message": "Profile updated successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(response); err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	message := "Profile updated successfully"
+	services.ReturnJSON(w, http.StatusOK, message)
 }
 
 func updateProfile(updatedProfile *EditUserRequest, userID int, v *UserValid) error {
