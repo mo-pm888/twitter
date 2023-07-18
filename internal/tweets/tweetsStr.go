@@ -28,6 +28,7 @@ type CreatNewTweet struct {
 	OnlyFollowers       bool `json:"only_followers"`
 	OnlyMutualFollowers bool `json:"only_mutual_followers"`
 	OnlyMe              bool `json:"only_me"`
+	ReplyTo             int
 }
 
 type TweetValid struct {

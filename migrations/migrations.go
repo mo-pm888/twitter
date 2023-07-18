@@ -37,7 +37,9 @@ var items = []darwin.Migration{
 			only_followers BOOLEAN NOT NULL,
 			only_mutual_followers BOOLEAN NOT NULL,
 			only_me BOOLEAN NOT NULL,
-			retweet INTEGER NOT NULL
+			retweet INTEGER NOT NULL,
+			reply_to INTEGER,
+                    
 		)`,
 	},
 	{
@@ -76,17 +78,6 @@ var items = []darwin.Migration{
 			id SERIAL PRIMARY KEY,
 			user_id INTEGER NOT NULL,
 			login_token TEXT DEFAULT NULL,
-			timestamp TIMESTAMP WITH TIME ZONE NOT NULL
-		)`,
-	},
-	{
-		Version:     7,
-		Description: `reply`,
-		Script: `CREATE TABLE reply (
-			reply_id SERIAL PRIMARY KEY,
-			text_reply TEXT NOT NULL,
-			parent_tweet_id INTEGER DEFAULT NULL,
-			tweet_id INTEGER NOT NULL,
 			timestamp TIMESTAMP WITH TIME ZONE NOT NULL
 		)`,
 	},
