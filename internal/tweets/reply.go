@@ -16,7 +16,7 @@ func Reply(w http.ResponseWriter, r *http.Request) {
 		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = services.CreatNewTweet(newReply, r, userID, idTweet)
+	err = services.CreatNewTweet(newReply, r.Context(), userID, idTweet)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
