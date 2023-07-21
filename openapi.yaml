@@ -375,10 +375,6 @@ paths:
                   type: boolean
               required:
                 - text
-                - public
-                - only_followers
-                - only_mutual_followers
-                - only_me
             x-codegen-request-body-name: updatedTweet
       responses:
         '200':
