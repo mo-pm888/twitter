@@ -26,9 +26,13 @@ func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next htt
 		services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-
-	if cookie != nil {
-		sessionID := cookie.Value
+	var sessionID string
+	if apikey != "" {
+		sessionID = apikey
+	} else if cookie != nil {
+		sessionID = cookie.Value
+	}
+	if cookie != nil || apikey != "" {
 		query := "SELECT user_id FROM user_session WHERE login_token = $1"
 		var userID int
 		err = pg.DB.QueryRow(query, sessionID).Scan(&userID)
@@ -39,18 +43,7 @@ func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next htt
 
 		ctx := context.WithValue(r.Context(), "userID", userID)
 		r = r.WithContext(ctx)
-	} else if apikey != "" {
-		sessionID := apikey
-		query := "SELECT user_id FROM user_session WHERE login_token = $1"
-		var userID int
-		err = pg.DB.QueryRow(query, sessionID).Scan(&userID)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
-		ctx := context.WithValue(r.Context(), "userID", userID)
-		r = r.WithContext(ctx)
 	} else {
 		services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -412,27 +405,13 @@ func CheckEmail(newUser *Users) string {
 	return confirmToken
 }
 
-func GetCurrentProfile(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(int)
-
-	query := "SELECT id, name, email, birthdate,bio,location,nicname  FROM users_tweeter WHERE id = $1"
-	var user Users
-	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Email, &user.BirthDate, &user.Bio, &user.Location, &user.Nickname)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
-}
 func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id"]
 
-	query := "SELECT id, name, email, bio FROM users WHERE id = $1"
+	query := "SELECT id, name, bio FROM users_tweeter WHERE id = $1"
 	var user Users
-	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Email, &user.Bio)
+	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Bio)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -24,6 +24,16 @@ type UserLogin struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+type GetCurrentUser struct {
+	Name      string `json:"name"`
+	BirthDate string `json:"birthdate"`
+	Nickname  string `json:"nickname"`
+	Bio       string `json:"bio"`
+	Location  string `json:"location"`
+	Following int    `json:"following"`
+	Followers int    `json:"followers"`
+}
+
 type ReplaceMyData struct {
 	NewName      string `json:"new_name"`
 	NewPassword  string `json:"new_password"`
