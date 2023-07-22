@@ -563,8 +563,8 @@ func RegisterUsersValidations(userValid *UserValid) error {
 		return err
 	}
 
-	err = userValid.validate.RegisterValidation("checkDataTime", func(fl validator.FieldLevel) bool {
-		return CheckDateTime(fl, userValid)
+	err = userValid.validate.RegisterValidation("checkData", func(fl validator.FieldLevel) bool {
+		return CheckDate(fl, userValid)
 	})
 	if err != nil {
 		return err

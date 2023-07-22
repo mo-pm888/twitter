@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -133,14 +132,6 @@ func ReturnErr(w http.ResponseWriter, err string, code int) {
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errj)
 }
-func HashedPassword(password string) (error, []byte) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return err, nil
-	}
-	return nil, hashedPassword
-}
-
 func ReturnJSON(w http.ResponseWriter, statusCode int, message string) {
 	response := map[string]interface{}{
 		"status":  "success",

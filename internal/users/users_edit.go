@@ -6,10 +6,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-playground/validator/v10"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strconv"
 	"strings"
 )
+
+type EditUserRequest struct {
+	ID        int    `json:"-"`
+	Name      string `json:"name" validate:"omitempty,checkName"`
+	Password  string `json:"password" validate:"omitempty,checkPassword"`
+	Email     string `json:"email" validate:"omitempty,email"`
+	BirthDate string `json:"birthdate" validate:"omitempty,checkDataTime"`
+	Nickname  string `json:"nickname" validate:"omitempty,checkNickname"`
+	Bio       string `json:"bio" validate:"omitempty,checkBio"`
+	Location  string `json:"location" validate:"omitempty,checkLocation"`
+}
 
 func EditProfile(w http.ResponseWriter, r *http.Request) {
 	userValid := &UserValid{
@@ -57,8 +69,9 @@ func updateProfile(updatedProfile *EditUserRequest, userID int, v *UserValid) er
 		keys = append(keys, " name = $"+strconv.Itoa(len(keys)+1))
 	}
 	if updatedProfile.Password != "" {
-		err, hashedPassword = services.HashedPassword(updatedProfile.Password)
+		hashedPassword, err = bcrypt.GenerateFromPassword([]byte(updatedProfile.Password), bcrypt.DefaultCost)
 		if err != nil {
+			fmt.Println(err)
 			return err
 		}
 		values = append(values, string(hashedPassword))

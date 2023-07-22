@@ -45,13 +45,3 @@ type Tweeter_like struct {
 	Id_post    int `json:"id_post"`
 	Whose_like int `json:"whose_like"`
 }
-type EditUserRequest struct {
-	ID        int
-	Name      string `json:"name" validate:"omitempty,checkName"`
-	Password  string `json:"password" validate:"omitempty,checkPassword"`
-	Email     string `json:"email" validate:"omitempty,email"`
-	BirthDate string `json:"birthdate" validate:"omitempty,checkDataTime"`
-	Nickname  string `json:"nickname" validate:"omitempty,checkNickname"`
-	Bio       string `json:"bio" validate:"omitempty,checkBio"`
-	Location  string `json:"location" validate:"omitempty,checkLocation"`
-}
