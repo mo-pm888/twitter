@@ -37,8 +37,8 @@ var items = []darwin.Migration{
 			only_followers BOOLEAN NOT NULL,
 			only_mutual_followers BOOLEAN NOT NULL,
 			only_me BOOLEAN NOT NULL,
-			retweet INTEGER NOT NULL,
-			reply_to INTEGER,
+			retweet INTEGER,
+			reply_to INTEGER
                     
 		)`,
 	},

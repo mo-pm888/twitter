@@ -2,10 +2,6 @@ package services
 
 import (
 	Postgresql "Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/tweets"
-	"context"
-	"time"
-
 	//Serviceuser "Twitter_like_application/internal/users"
 
 	"bufio"
@@ -137,15 +133,6 @@ func ReturnErr(w http.ResponseWriter, err string, code int) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errj)
-}
-func CreatNewTweet(newTweet tweets.CreatNewTweet, ctx context.Context, userID int, tweetTo string) error {
-	query := `INSERT INTO tweets (user_id, text, created_at, public, only_followers, only_mutual_followers, only_me,reply_to)
-		VALUES ($1, $2, $3, $4, $5, $6, $7,$8) RETURNING tweet_id`
-	err := Postgresql.DB.QueryRowContext(ctx, query, userID, newTweet.Text, time.Now(), newTweet.Public, newTweet.OnlyFollowers, newTweet.OnlyMutualFollowers, newTweet.OnlyMe, tweetTo).Scan(&newTweet.TweetID)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 func ReturnJSON(w http.ResponseWriter, statusCode int, message string) {
 	response := map[string]interface{}{

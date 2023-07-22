@@ -10,13 +10,14 @@ import (
 func Reply(w http.ResponseWriter, r *http.Request) {
 	idTweet := mux.Vars(r)["id_tweet"]
 	userID := r.Context().Value("userID").(int)
-	var newReply CreatNewTweet
+	var newReply CreateNewTweetRequest
 	err := json.NewDecoder(r.Body).Decode(&newReply)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = services.CreatNewTweet(newReply, r.Context(), userID, idTweet)
+
+	err = CreateTweet(newReply, r.Context(), userID, idTweet)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return

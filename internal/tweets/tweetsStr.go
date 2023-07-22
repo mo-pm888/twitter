@@ -17,15 +17,12 @@ type Tweet struct {
 	ParentTweetId int       `json:"parent_tweet_id"`
 	Visibility
 }
-type CreatNewTweet struct {
-	TweetID             int
-	Text                string `json:"text" validate:"required,checkTweetText"`
-	CreatedAt           time.Time
-	Public              bool `json:"public"`
-	OnlyFollowers       bool `json:"only_followers"`
-	OnlyMutualFollowers bool `json:"only_mutual_followers"`
-	OnlyMe              bool `json:"only_me"`
-	ReplyTo             int
+type CreateNewTweetRequest struct {
+	TweetID   int       `json:"-"`
+	Text      string    `json:"text" validate:"required,checkTweetText"`
+	CreatedAt time.Time `json:"-"`
+	Visibility
+	ReplyTo int `json:"-"`
 }
 
 type TweetValid struct {
