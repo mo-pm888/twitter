@@ -21,6 +21,9 @@ func Server() {
 	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetCurrentProfile)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
+	r.HandleFunc("/v1/home", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.Home)).ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/reset-password", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.ResetPassword)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
