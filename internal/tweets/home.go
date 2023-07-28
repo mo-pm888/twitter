@@ -31,6 +31,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	followersArray := pq.Array(followers)
 	rows, err = pg.DB.Query(tweetsQuery, followersArray)
 	if err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
 	defer rows.Close()
 
