@@ -97,6 +97,12 @@ var items = []darwin.Migration{
 		Script: `ALTER TABLE follower RENAME COLUMN follower_id TO following
 		`,
 	},
+	{
+		Version:     10,
+		Description: `rename column`,
+		Script: `ALTER TABLE follower RENAME COLUMN followers TO follower
+		`,
+	},
 }
 
 func Run(db *sql.DB) error {

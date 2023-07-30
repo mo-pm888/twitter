@@ -11,24 +11,24 @@ import (
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
-	followingQuery := "SELECT following FROM follower WHERE $1"
+	followingQuery := "SELECT following FROM follower WHERE follower = $1"
 	rows, err := pg.DB.Query(followingQuery, userID)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
 	defer rows.Close()
-	var followingID []int
+	var followingsID []int
 	for rows.Next() {
 		var following int
 		if err = rows.Scan(&following); err != nil {
 			log.Println("Error scanning following", err)
 			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		}
-		followingID = append(followingID, following)
+		followingsID = append(followingsID, following)
 	}
 
-	tweetsQuery := `SELECT tweet_id, text, user_id, created_at FROM tweets WHERE user_id = ANY($1) ORDER BY created_at DESC LIMIT 10`
-	followingArray := pq.Array(followingID)
+	tweetsQuery := `SELECT tweet_id, text, user_id, created_at,parent_tweet_id,public,only_followers,only_mutual_followers,only_me,retweet FROM tweets WHERE user_id = ANY($1) ORDER BY created_at DESC LIMIT 10`
+	followingArray := pq.Array(followingsID)
 	rows, err = pg.DB.Query(tweetsQuery, followingArray)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
@@ -38,7 +38,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	var tweets []Tweet
 	for rows.Next() {
 		var tweet Tweet
-		if err = rows.Scan(&tweet.TweetID, &tweet.Text, &tweet.Author, &tweet.CreatedAt); err != nil {
+		if err = rows.Scan(&tweet.TweetID, &tweet.Text, &tweet.Author, &tweet.CreatedAt, &tweet.ParentTweetId, &tweet.Public, &tweet.OnlyFollowers, &tweet.OnlyMutualFollowers, &tweet.OnlyMe, &tweet.Retweet); err != nil {
 			log.Println("Error scanning tweets:", err)
 			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		}
