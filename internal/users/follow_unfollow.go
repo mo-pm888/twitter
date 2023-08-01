@@ -3,73 +3,45 @@ package users
 import (
 	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
-	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
 func FollowUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
+	secondUserID := mux.Vars(r)["id"]
 
-	var targetUserID TargetUser
-	err := json.NewDecoder(r.Body).Decode(&targetUserID)
-	if err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	var count int
-	err = pg.DB.QueryRow("SELECT COUNT(*) FROM followers_subscriptions WHERE follower_id = $1 AND subscription_id = $2", userID, targetUserID.ID).Scan(&count)
+	var exists bool
+	err := pg.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM follower WHERE follower = $1 AND following = $2 LIMIT 1)", userID, secondUserID).Scan(&exists)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	if count > 0 {
-		services.ReturnErr(w, "User is already subscribed to the target user", http.StatusBadRequest)
+	if exists {
+		services.ReturnErr(w, "User is already following to this user", http.StatusBadRequest)
 		return
-	}
+	} else {
 
-	_, err = pg.DB.Exec("INSERT INTO followers_subscriptions (follower_id, subscription_id) VALUES ($1, $2)", userID, targetUserID.ID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response := map[string]interface{}{
-		"status":  "success",
-		"message": fmt.Sprintf("id %d folloer to id %d", userID, targetUserID.ID),
-	}
-	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(response); err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
+		_, err = pg.DB.Exec("INSERT INTO follower (follower, following) VALUES ($1, $2)", userID, secondUserID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		message := fmt.Sprintf("id %d follower to id %s", userID, secondUserID)
+		services.ReturnJSON(w, http.StatusOK, message)
 	}
 }
 
 func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
+	secondUserID := mux.Vars(r)["id"]
 
-	var targetUserID TargetUser
-	err := json.NewDecoder(r.Body).Decode(&targetUserID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	_, err = pg.DB.Exec("DELETE FROM followers_subscriptions WHERE follower_id = $1 AND subscription_id = $2", userID, targetUserID.ID)
+	_, err := pg.DB.Exec("DELETE FROM follower WHERE follower = $1 AND following = $2", userID, secondUserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	response := map[string]interface{}{
-		"status":  "success",
-		"message": fmt.Sprintf("id %d unfolloer from id %d", userID, targetUserID.ID),
-	}
-	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(response); err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	message := fmt.Sprintf("id %d unfollower from id %s", userID, secondUserID)
+	services.ReturnJSON(w, http.StatusOK, message)
 }
