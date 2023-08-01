@@ -82,7 +82,7 @@ func CheckPassword(fl validator.FieldLevel, v *UserValid) bool {
 	if HasCommonWord(password) {
 		hasCommonWord = true
 	}
-	if hasUpperCase == false {
+	if !hasUpperCase == false {
 		v.validErr["password"] += "uppercase,"
 	}
 	if hasSpecialChar == false {
@@ -91,10 +91,10 @@ func CheckPassword(fl validator.FieldLevel, v *UserValid) bool {
 	if hasDigit == false {
 		v.validErr["password"] += "digit,"
 	}
-	if hasSequence == false {
+	if !hasSequence == false {
 		v.validErr["password"] += "sequence,"
 	}
-	if hasCommonWord == false {
+	if !hasCommonWord == false {
 		v.validErr["password"] += "common word,"
 	}
 	if (hasUpperCase && hasSpecialChar && hasDigit && hasSequence && hasCommonWord) == false {
@@ -108,12 +108,12 @@ func CheckDate(fl validator.FieldLevel, v *UserValid) bool {
 	dateStr := fl.Field().String()
 	date, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
-		v.validErr["datatime"] += "uncorrect date,"
+		v.validErr["data"] += "incorrect date,"
 		return false
 	}
 	currentDate := time.Now()
 	if date.After(currentDate) {
-		v.validErr["datatime"] += "invalid period more,"
+		v.validErr["data"] += "date is after current date"
 		return true
 	}
 
@@ -156,9 +156,9 @@ func CheckBio(fl validator.FieldLevel, v *UserValid) bool {
 
 }
 func CheckLocation(fl validator.FieldLevel, v *UserValid) bool {
-	nickname := fl.Field().String()
-	if len(nickname) > maxNameLenght {
-		v.validErr["nickname"] = "long"
+	location := fl.Field().String()
+	if len(location) > maxNameLenght {
+		v.validErr["location"] = "long"
 	}
 	return true
 

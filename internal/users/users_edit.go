@@ -57,12 +57,7 @@ func updateProfile(updatedProfile *EditUserRequest, userID int, v *UserValid) er
 	)
 	err := v.validate.Struct(updatedProfile)
 	if err != nil {
-		if validationErrs, ok := err.(validator.ValidationErrors); ok {
-			for _, e := range validationErrs {
-				v.validErr["err"] = e.Field()
-			}
-		}
-		return v
+		return err
 	}
 	if updatedProfile.Name != "" {
 		values = append(values, updatedProfile.Name)
