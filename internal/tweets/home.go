@@ -17,18 +17,18 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
 	defer rows.Close()
-	var followingsID []int
+	var followingIDs []int
 	for rows.Next() {
 		var following int
 		if err = rows.Scan(&following); err != nil {
 			log.Println("Error scanning following", err)
 			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		}
-		followingsID = append(followingsID, following)
+		followingIDs = append(followingIDs, following)
 	}
 
 	tweetsQuery := `SELECT tweet_id, text, user_id, created_at,parent_tweet_id,public,only_followers,only_mutual_followers,only_me,retweet FROM tweets WHERE user_id = ANY($1) ORDER BY created_at DESC LIMIT 10`
-	followingArray := pq.Array(followingsID)
+	followingArray := pq.Array(followingIDs)
 	rows, err = pg.DB.Query(tweetsQuery, followingArray)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
