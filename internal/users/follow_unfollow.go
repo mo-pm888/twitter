@@ -29,7 +29,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		message := fmt.Sprintf("id %d follower to id %s", userID, secondUserID)
+		message := fmt.Sprintf("You are now following a user with id %s", secondUserID)
 		services.ReturnJSON(w, http.StatusOK, message)
 	}
 }
