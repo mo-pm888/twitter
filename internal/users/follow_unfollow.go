@@ -19,7 +19,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if exists {
-		services.ReturnErr(w, "User is already following to this user", http.StatusBadRequest)
+		services.ReturnErr(w, "You are already following this user", http.StatusBadRequest)
 		return
 	} else {
 
