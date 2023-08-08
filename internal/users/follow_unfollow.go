@@ -43,6 +43,6 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	message := fmt.Sprintf("id %d unfollower from id %s", userID, secondUserID)
+	message := fmt.Sprintf("You are no longer following a user with id %s", secondUserID)
 	services.ReturnJSON(w, http.StatusOK, message)
 }
