@@ -1,11 +1,12 @@
 package users
 
 import (
+	"fmt"
+	"net/http"
+
 	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
-	"fmt"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func FollowUser(w http.ResponseWriter, r *http.Request) {
@@ -19,7 +20,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if exists {
-		services.ReturnErr(w, "User is already following to this user", http.StatusBadRequest)
+		services.ReturnErr(w, "You are already following this user", http.StatusBadRequest)
 		return
 	} else {
 
@@ -28,7 +29,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		message := fmt.Sprintf("id %d follower to id %s", userID, secondUserID)
+		message := fmt.Sprintf("You are now following a user with id %s", secondUserID)
 		services.ReturnJSON(w, http.StatusOK, message)
 	}
 }
@@ -42,6 +43,6 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	message := fmt.Sprintf("id %d unfollower from id %s", userID, secondUserID)
+	message := fmt.Sprintf("You are no longer following a user with id %s", secondUserID)
 	services.ReturnJSON(w, http.StatusOK, message)
 }
