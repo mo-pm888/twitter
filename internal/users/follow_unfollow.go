@@ -1,11 +1,12 @@
 package users
 
 import (
+	"fmt"
+	"net/http"
+
 	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
-	"fmt"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func FollowUser(w http.ResponseWriter, r *http.Request) {
