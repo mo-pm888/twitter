@@ -136,9 +136,8 @@ func CheckNickName(fl validator.FieldLevel, v *UserValid) bool {
 
 }
 func CheckBio(fl validator.FieldLevel, v *UserValid) bool {
-	nickname := fl.Field().String()
-	if len(nickname) > maxlenghtBio {
-		v.validErr["nickname"] = "long"
+	if len(fl.Field().String()) > maxlenghtBio {
+		v.validErr["bio"] = "long"
 	}
 	return true
 

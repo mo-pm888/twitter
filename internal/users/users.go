@@ -38,8 +38,7 @@ func (v *UserValid) Error() string {
 		pairs = append(pairs, fmt.Sprintf("%s: %s", k, v))
 	}
 
-	result := strings.Join(pairs, "; ")
-	return result
+	return strings.Join(pairs, "; ")
 }
 
 func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next http.Handler) {
@@ -563,7 +562,7 @@ func RegisterUsersValidations(userValid *UserValid) error {
 		return err
 	}
 
-	err = userValid.validate.RegisterValidation("checkData", func(fl validator.FieldLevel) bool {
+	err = userValid.validate.RegisterValidation("checkDate", func(fl validator.FieldLevel) bool {
 		return CheckDate(fl, userValid)
 	})
 	if err != nil {
