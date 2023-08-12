@@ -186,6 +186,8 @@ paths:
       tags:
         - Users
       summary: Follow User
+      security:
+        - apiKey: [ ]
       requestBody:
         required: true
         content:
@@ -204,6 +206,8 @@ paths:
       tags:
         - Users
       summary: Unfollow User
+      security:
+        - apiKey: [ ]
       requestBody:
         required: true
         content:
@@ -540,8 +544,8 @@ components:
     UsersFollow:
       type: object
       properties:
-        id2:
-          type: string
+        id:
+          type: integer
     UsersunFollow:
       type: object
       properties:

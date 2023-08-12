@@ -20,6 +20,7 @@ type Users struct {
 	Following []int
 	Followers []int
 }
+
 type GetCurrentUser struct {
 	Name      string `json:"name"`
 	BirthDate string `json:"birthdate"`

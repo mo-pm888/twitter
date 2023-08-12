@@ -134,3 +134,16 @@ func ReturnErr(w http.ResponseWriter, err string, code int) {
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errj)
 }
+func ReturnJSON(w http.ResponseWriter, statusCode int, message string) {
+	response := map[string]interface{}{
+		"status":  "success",
+		"message": message,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		ReturnErr(w, err.Error(), http.StatusInternalServerError)
+	}
+}
