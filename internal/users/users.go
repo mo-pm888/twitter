@@ -10,7 +10,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
@@ -48,9 +47,13 @@ func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next htt
 		services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-
-	if cookie != nil {
-		sessionID := cookie.Value
+	var sessionID string
+	if apikey != "" {
+		sessionID = apikey
+	} else if cookie != nil {
+		sessionID = cookie.Value
+	}
+	if cookie != nil || apikey != "" {
 		query := "SELECT user_id FROM user_session WHERE login_token = $1"
 		var userID int
 		err = pg.DB.QueryRow(query, sessionID).Scan(&userID)
@@ -61,18 +64,7 @@ func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next htt
 
 		ctx := context.WithValue(r.Context(), "userID", userID)
 		r = r.WithContext(ctx)
-	} else if apikey != "" {
-		sessionID := apikey
-		query := "SELECT user_id FROM user_session WHERE login_token = $1"
-		var userID int
-		err = pg.DB.QueryRow(query, sessionID).Scan(&userID)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
-		ctx := context.WithValue(r.Context(), "userID", userID)
-		r = r.WithContext(ctx)
 	} else {
 		services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -279,56 +271,46 @@ func ResetPasswordPlusEmail(user *Users) {
 	return
 }
 
-func FollowUser(w http.ResponseWriter, r *http.Request) {
+func EditProfile(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 
-	var targetUserID Users
-	err := json.NewDecoder(r.Body).Decode(&targetUserID)
+	var updatedProfile Users
+	err := json.NewDecoder(r.Body).Decode(&updatedProfile)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	var count int
-	err = pg.DB.QueryRow("SELECT COUNT(*) FROM followers_subscriptions WHERE follower_id = $1 AND subscription_id = $2", userID, targetUserID).Scan(&count)
+	query := "UPDATE users_tweeter SET username = $1, nickname = $2, birthdate = $3, email = $4, password = $5 WHERE id = $6"
+	values := []interface{}{updatedProfile.Name, updatedProfile.Nickname, updatedProfile.BirthDate, updatedProfile.Email, updatedProfile.Password, userID}
+
+	if updatedProfile.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(updatedProfile.Password), bcrypt.DefaultCost)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		query += ", password = $5"
+		values = append(values, hashedPassword)
+	}
+
+	query += " WHERE id = $6"
+	values = append(values, userID)
+
+	_, err = pg.DB.Exec(query, values...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	if count > 0 {
-		http.Error(w, "User is already subscribed to the target user", http.StatusBadRequest)
-		return
+	response := map[string]interface{}{
+		"status":  "success",
+		"message": "Profile updated successfully",
 	}
-
-	_, err = pg.DB.Exec("INSERT INTO followers_subscriptions (follower_id, subscription_id) VALUES ($1, $2)", userID, targetUserID.ID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
-func UnfollowUser(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(int)
-
-	var targetUserID Users
-	err := json.NewDecoder(r.Body).Decode(&targetUserID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	_, err = pg.DB.Exec("DELETE FROM followers_subscriptions WHERE follower_id = $1 AND subscription_id = $2", userID, targetUserID.ID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	fmt.Println("Done")
-}
 func GetFollowers(w http.ResponseWriter, r *http.Request) {
 	userID := r.FormValue("user_id")
 	if userID == "" {
@@ -494,27 +476,13 @@ func CheckEmail(newUser *Users) string {
 	return confirmToken
 }
 
-func GetCurrentProfile(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(int)
-
-	query := "SELECT id, name, email, birthdate,bio,location,nicname  FROM users_tweeter WHERE id = $1"
-	var user Users
-	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Email, &user.BirthDate, &user.Bio, &user.Location, &user.Nickname)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
-}
 func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID := vars["id"]
 
-	query := "SELECT id, name, email, bio FROM users WHERE id = $1"
+	query := "SELECT id, name, bio FROM users_tweeter WHERE id = $1"
 	var user Users
-	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Email, &user.Bio)
+	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Bio)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

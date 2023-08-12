@@ -79,6 +79,30 @@ var items = []darwin.Migration{
 			timestamp TIMESTAMP WITH TIME ZONE NOT NULL
 		)`,
 	},
+	{
+		Version:     7,
+		Description: `rename table followers_subscriptions table`,
+		Script: `ALTER TABLE followers_subscriptions RENAME TO follower
+		`,
+	},
+	{
+		Version:     8,
+		Description: `rename column`,
+		Script: `ALTER TABLE follower RENAME COLUMN subscription_id TO followers
+		`,
+	},
+	{
+		Version:     9,
+		Description: `rename column`,
+		Script: `ALTER TABLE follower RENAME COLUMN follower_id TO following
+		`,
+	},
+	{
+		Version:     10,
+		Description: `rename column`,
+		Script: `ALTER TABLE follower RENAME COLUMN followers TO follower
+		`,
+	},
 }
 
 func Run(db *sql.DB) error {
