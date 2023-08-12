@@ -6,7 +6,6 @@ import (
 	"Twitter_like_application/internal/server"
 	"Twitter_like_application/migrations"
 	"fmt"
-	"sync"
 )
 
 type ServiceMongoDb struct {
@@ -14,19 +13,11 @@ type ServiceMongoDb struct {
 }
 
 func main() {
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		err := admin.LoadEnvFile()
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println("**** env files is completed ****")
-		}
-		wg.Done()
-	}()
-	wg.Wait()
-	err := pg.ConnectPostgresql()
+	err := admin.LoadEnvFile()
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = pg.ConnectPostgresql()
 	if err != nil {
 		fmt.Println(err)
 	}
