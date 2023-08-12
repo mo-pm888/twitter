@@ -1,6 +1,7 @@
 package server
 
 import (
+	"Twitter_like_application/internal/admin"
 	Tweets "Twitter_like_application/internal/tweets"
 	Serviceuser "Twitter_like_application/internal/users"
 	"fmt"
@@ -10,9 +11,9 @@ import (
 	"net/http/httptest"
 )
 
-func Server() {
+func Server() error {
 	r := mux.NewRouter()
-	fmt.Println("Server was run", "localhost:8080")
+	fmt.Printf("Server was run %s:%s\n", admin.ServerHost, admin.ServerPort)
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", Serviceuser.CreateUser).Methods(http.MethodPost)
@@ -58,8 +59,9 @@ func Server() {
 		w.WriteHeader(http.StatusOK)
 
 	})
-	err := http.ListenAndServe("localhost:8080", r)
+	err := http.ListenAndServe(fmt.Sprintf("%s:%s", admin.ServerHost, admin.ServerPort), r)
 	fmt.Println(err)
+	return err
 }
 
 func LoggingMiddleware(next http.Handler) http.Handler {
