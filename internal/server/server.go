@@ -1,6 +1,7 @@
 package server
 
 import (
+	"Twitter_like_application/internal/admin"
 	Tweets "Twitter_like_application/internal/tweets"
 	Serviceuser "Twitter_like_application/internal/users"
 	"fmt"
@@ -10,9 +11,9 @@ import (
 	"net/http/httptest"
 )
 
-func Server() {
+func Server() error {
 	r := mux.NewRouter()
-	fmt.Println("Server was run", "localhost:8080")
+	fmt.Printf("Server was run %s:%s\n", admin.ServerHost, admin.ServerPort)
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", Serviceuser.CreateUser).Methods(http.MethodPost)
@@ -20,6 +21,9 @@ func Server() {
 	http.Handle("/v1/users/logout", Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.LogoutUser)))
 	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetCurrentProfile)).ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
+	r.HandleFunc("/v1/home", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.Home)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/reset-password", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.ResetPassword)).ServeHTTP(w, r)
@@ -30,7 +34,7 @@ func Server() {
 	r.HandleFunc("/v1/users/{id}/unfollow", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.UnfollowUser)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
-	r.HandleFunc("/v1/users", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/v1/users/edit", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.EditProfile)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/create", func(w http.ResponseWriter, r *http.Request) {
@@ -55,8 +59,9 @@ func Server() {
 		w.WriteHeader(http.StatusOK)
 
 	})
-	err := http.ListenAndServe("localhost:8080", r)
+	err := http.ListenAndServe(fmt.Sprintf("%s:%s", admin.ServerHost, admin.ServerPort), r)
 	fmt.Println(err)
+	return err
 }
 
 func LoggingMiddleware(next http.Handler) http.Handler {
