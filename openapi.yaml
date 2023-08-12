@@ -3,7 +3,7 @@ info:
   version: 1.0.0
   title: Tweeter API
   contact:
-   email: mo.pm@icloud.com
+    email: mo.pm@icloud.com
 "servers": [
   {
     "url": "http://localhost:8080",
@@ -88,25 +88,20 @@ paths:
         '500':
           description: Internal server error.
 
-  /v1/users/{id}:
+  /v1/users/:
     get:
       tags:
         - Users
       summary: Get Current User Profile
-      parameters:
-        - name: id
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: integer
+      security:
+        - apiKey: [ ]
       responses:
         '200':
           description: Current User Profile
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserProfile'
+                $ref: '#/components/schemas/GetUserProfile'
         '500':
           description: Internal Server Error
   /v1/users/profile/{id}:
@@ -191,6 +186,8 @@ paths:
       tags:
         - Users
       summary: Follow User
+      security:
+        - apiKey: [ ]
       requestBody:
         required: true
         content:
@@ -209,6 +206,8 @@ paths:
       tags:
         - Users
       summary: Unfollow User
+      security:
+        - apiKey: [ ]
       requestBody:
         required: true
         content:
@@ -223,17 +222,19 @@ paths:
         '500':
           description: Internal Server Error
 
-  /v1/tweets:
+  /v1/tweets/craete:
     post:
       tags:
         - Tweets
       summary: Create Tweet
+      security:
+        - apiKey: [ ]
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Tweet'
+              $ref: '#/components/schemas/TweetRequest'
       responses:
         '201':
           description: Tweet created successfully
@@ -271,32 +272,50 @@ paths:
                 $ref: '#/components/schemas/Tweet'
         '500':
           description: Internal Server Error
-
-  v1/tweets/{id_tweet}/like:
-      post:
-        tags:
-          - Tweets
-        summary: Like a tweet
-        parameters:
-          - name: id_tweet
-            in: path
-            description: ID of the tweet to like
-            required: true
-            schema:
-              type: integer
-        requestBody:
-          required: true
+  /v1/home:
+    get:
+      tags:
+        - Tweets
+      security:
+        - apiKey: [ ]
+      summary: Home
+      responses:
+        '200':
+          description: List of tweets
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Tweeter_like'
-        responses:
-          '200':
-            description: Tweet liked successfully
-          '400':
-            description: Bad request
-          '500':
-            description: Internal server error
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tweet'
+        '500':
+          description: Internal Server Error
+
+  v1/tweets/{id_tweet}/like:
+    post:
+      tags:
+        - Tweets
+      summary: Like a tweet
+      parameters:
+        - name: id_tweet
+          in: path
+          description: ID of the tweet to like
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tweeter_like'
+      responses:
+        '200':
+          description: Tweet liked successfully
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
   v1/tweets/{id_tweet}/unlike:
     delete:
       tags:
@@ -345,7 +364,87 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
-
+  /v1/tweets/{tweet_id}:
+    patch:
+      tags:
+        - Tweets
+      summary: Edit Tweet
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: tweet_id
+          in: path
+          description: ID of the tweet to edit
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                public:
+                  type: boolean
+                only_followers:
+                  type: boolean
+                only_mutual_followers:
+                  type: boolean
+                only_me:
+                  type: boolean
+              required:
+                - text
+            x-codegen-request-body-name: updatedTweet
+      responses:
+        '200':
+          description: Tweet updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tweet'
+        '400':
+          description: Invalid tweet data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/tweets/{id_tweet}/delete:
+    delete:
+      tags:
+        - Tweets
+      summary: Delete a tweet
+      parameters:
+        - in: path
+          name: id_tweet
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Retweet successful
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        '404':
+          description: Tweet not found
+        '500':
+          description: Internal server error
 
 components:
   schemas:
@@ -403,6 +502,26 @@ components:
         updatedAt:
           type: string
           format: date-time
+    GetUserProfile:
+      type: object
+      properties:
+        name:
+          type: string
+        birthdate:
+          type: string
+          format: data-time
+        nickname:
+          type: string
+        bio:
+          type: string
+        location:
+          type: string
+        followers:
+          type: integer
+        subscription:
+          type: integer
+
+
     UpdateUserProfile:
       type: object
       properties:
@@ -425,34 +544,72 @@ components:
     UsersFollow:
       type: object
       properties:
-        id2:
-          type: string
+        id:
+          type: integer
     UsersunFollow:
       type: object
       properties:
         id2:
           type: string
+    Home:
+      type: object
+      properties:
+        tweet_id:
+          type: integer
+        text:
+          type: string
+        user_id:
+          type: integer
+        create-time:
+          type: string
+
     Tweet:
       type: object
       properties:
-        userId:
+        tweet_id:
           type: integer
-        content:
+        user_id:
+          type: integer
+        text:
           type: string
+        created_at:
+          type: string
+          format: date-time
+        public:
+          type: boolean
+        only_followers:
+          type: boolean
+        only_mutual_followers:
+          type: boolean
+        only_me:
+          type: boolean
+        parent_tweet_id:
+          type: integer
     ErrorResponse:
       type: object
       properties:
         error:
           type: string
+    TweetRequest:
+      type: object
+      properties:
+        text:
+          type: string
+        public:
+          type: boolean
+        only_followers:
+          type: boolean
+        only_mutual_followers:
+          type: boolean
+        only_me:
+          type: boolean
+      required:
+        - text
   securitySchemes:
     apiKey:
       type: apiKey
       in: header
       name: X-API-KEY
-    appId:
-      type: apiKey
-      in: header
-      name: X-APP-ID
 security:
-    - apiKey: [ ]
-      appId: [ ]
+  - apiKey: [ ]
+    appId: [ ]

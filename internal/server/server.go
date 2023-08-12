@@ -18,11 +18,13 @@ func Server() error {
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", Serviceuser.CreateUser).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/login", Serviceuser.LoginUsers).Methods(http.MethodPost)
-	r.HandleFunc("/v1/logout", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.LogoutUser)).ServeHTTP(w, r)
+	http.Handle("/v1/users/logout", Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.LogoutUser)))
+	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetCurrentProfile)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
-	http.Handle("/v1/users/{id}", Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetCurrentProfile)))
-	r.HandleFunc("/v1/users/profile/{id}", Serviceuser.GetUserProfile).Methods(http.MethodGet)
+	r.HandleFunc("/v1/home", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.Home)).ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/reset-password", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.ResetPassword)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
@@ -35,10 +37,10 @@ func Server() error {
 	r.HandleFunc("/v1/users", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.EditProfile)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
-	r.HandleFunc("/v1/tweets", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.CreateTweet)).ServeHTTP(w, r)
+	r.HandleFunc("/v1/tweets/create", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.CreateNewTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
-	r.HandleFunc("/v1/tweets", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/v1/tweets/{id_tweet}", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.EditTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/{id_tweet}/retweet", func(w http.ResponseWriter, r *http.Request) {
