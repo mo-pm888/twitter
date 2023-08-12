@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type Users struct {
+type User struct {
 	ID                 int
 	Name               string `json:"name"`
 	Password           string `json:"password"`
@@ -75,7 +75,7 @@ type ResetPasswordUser struct {
 type FollowingForUser struct {
 	Writer     int `json:"writer"`
 	Subscriber int `json:"subscriber"`
-	Users
+	User
 }
 
 type UsersLogin struct {

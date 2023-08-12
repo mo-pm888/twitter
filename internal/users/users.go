@@ -59,7 +59,7 @@ func AuthHandler(next http.Handler) http.Handler {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	newUser := &Users{}
+	newUser := &User{}
 	err := json.NewDecoder(r.Body).Decode(newUser)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -106,14 +106,14 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(string)
 
-	var userResPass Users
+	var userResPass User
 	err := json.NewDecoder(r.Body).Decode(&userResPass)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	query := "SELECT name, email  FROM users_tweeter WHERE id = $1"
-	var user Users
+	var user User
 	err = pg.DB.QueryRow(query, userID).Scan(&user.Name, &user.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -126,7 +126,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	ResetPasswordPlusEmail(&userResPass)
 }
 
-func ResetPasswordPlusEmail(user *Users) {
+func ResetPasswordPlusEmail(user *User) {
 
 	resetToken := services.GenerateResetToken()
 	user.ResetPasswordToken = resetToken
@@ -153,7 +153,7 @@ func ResetPasswordPlusEmail(user *Users) {
 func FollowUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 
-	var targetUserID Users
+	var targetUserID User
 	err := json.NewDecoder(r.Body).Decode(&targetUserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -184,7 +184,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 
-	var targetUserID Users
+	var targetUserID User
 	err := json.NewDecoder(r.Body).Decode(&targetUserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -204,7 +204,7 @@ func UnfollowUser(w http.ResponseWriter, r *http.Request) {
 func EditProfile(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 
-	var updatedProfile Users
+	var updatedProfile User
 	err := json.NewDecoder(r.Body).Decode(&updatedProfile)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -256,10 +256,10 @@ func GetFollowers(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var followers []Users
+	var followers []User
 
 	for rows.Next() {
-		var follower Users
+		var follower User
 		err := rows.Scan(&follower.UserID, &follower.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -292,10 +292,10 @@ func GetFollowing(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var following []Users
+	var following []User
 
 	for rows.Next() {
-		var followee Users
+		var followee User
 		err := rows.Scan(&followee.UserID, &followee.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -330,10 +330,10 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var users []Users
+	var users []User
 
 	for rows.Next() {
-		var user Users
+		var user User
 		err := rows.Scan(&user.ID, &user.Name, &user.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -375,7 +375,7 @@ func GetStatistics(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(statistics)
 }
-func CheckEmail(newUser *Users) string {
+func CheckEmail(newUser *User) string {
 	token := make([]byte, 32)
 	_, err := rand.Read(token)
 	if err != nil {
@@ -410,7 +410,7 @@ func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	userID := vars["id"]
 
 	query := "SELECT id, name, bio FROM users_tweeter WHERE id = $1"
-	var user Users
+	var user User
 	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Bio)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

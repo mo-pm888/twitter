@@ -31,7 +31,7 @@ func TestCreateUser(t *testing.T) {
 
 	assert.Equal(t, http.StatusCreated, w.Code)
 
-	var newUser Serviceuser.Users
+	var newUser Serviceuser.User
 	err = json.Unmarshal(w.Body.Bytes(), &newUser)
 	assert.NoError(t, err)
 
@@ -40,7 +40,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 //func TestLoginUsers(t *testing.T) {
-//	server := httptest.NewServer(http.HandlerFunc(Serviceuser.LoginUsers))
+//	server := httptest.NewServer(http.HandlerFunc(Serviceuser.Login))
 //	defer server.Close()
 //
 //	formData := strings.NewReader("usermail=test@example.com&password=123456")
@@ -86,7 +86,7 @@ func TestCreateUser(t *testing.T) {
 //	server := httptest.NewServer(http.HandlerFunc(Serviceuser.ResetPassword))
 //	defer server.Close()
 //
-//	user := Serviceuser.Users{
+//	user := Serviceuser.User{
 //		Email: "test@example.com",
 //	}
 //
@@ -118,7 +118,7 @@ func TestCreateUser(t *testing.T) {
 //	defer server.Close()
 //
 //	var (
-//		user = Serviceuser.Users{
+//		user = Serviceuser.User{
 //			ID:        888,
 //			Name:      "Test User",
 //			Email:     "test@example.com",
@@ -133,7 +133,7 @@ func TestCreateUser(t *testing.T) {
 //	if err != nil {
 //		t.Fatalf("Failed to create request: %v", err)
 //	}
-//	var userProfile Serviceuser.Users
+//	var userProfile Serviceuser.User
 //
 //	req.Header.Set("X-UserID", string(userProfile.ID))
 //

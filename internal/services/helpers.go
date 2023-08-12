@@ -20,6 +20,11 @@ type ErrResponse struct {
 	Errtext string `json:"errtext"`
 }
 
+var (
+	emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	emailLen   = 320
+)
+
 func GenerateResetToken() string {
 	const resetTokenLength = 32
 	tokenBytes := make([]byte, resetTokenLength)
@@ -137,12 +142,11 @@ func ReturnErr(w http.ResponseWriter, err string, code int) {
 	json.NewEncoder(w).Encode(errj)
 }
 func CheckEmail(w http.ResponseWriter, email string) {
-	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	if !emailRegex.MatchString(email) {
 		ReturnErr(w, "Invalid email format", http.StatusBadRequest)
 		return
 	}
-	if len(email) > 50 {
+	if len(email) > 320 {
 		ReturnErr(w, "Name exceeds maximum length", http.StatusBadRequest)
 		return
 	}
