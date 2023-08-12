@@ -23,7 +23,7 @@ func (v *TweetValid) Error() string {
 func CheckTweetText(fl validator.FieldLevel, v *TweetValid) bool {
 	text := fl.Field().String()
 	if len(text) > maxLenghtTweet {
-		v.ValidErr["name"] += "long name,"
+		v.ValidErr["name"] += "long text,"
 	}
 	return true
 }
@@ -35,28 +35,4 @@ func RegisterTweetValidations(tweetValid *TweetValid) error {
 		return err
 	}
 	return nil
-}
-func CheckVisibility(newTweet *CreatNewTweet, v *TweetValid) bool {
-	count := 0
-	if newTweet.Public {
-		v.ValidErr["visibility"] += "public true,"
-		count++
-	}
-	if newTweet.OnlyMe {
-		v.ValidErr["visibility"] += "onlyme true,"
-		count++
-	}
-	if newTweet.OnlyFollowers {
-		v.ValidErr["visibility"] += "onlyfollowers true,"
-		count++
-	}
-	if newTweet.OnlyMutualFollowers {
-		v.ValidErr["visibility"] += "onlymutualFollowers true,"
-		count++
-	}
-	if count != 1 {
-		v.ValidErr["visibility"] += "You need to choose only one variant "
-		return false
-	}
-	return count == 1
 }
