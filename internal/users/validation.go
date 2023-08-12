@@ -47,6 +47,22 @@ func HasSequence(password string) bool {
 	}
 	return false
 }
+func HasUpper(password string) bool {
+	for _, char := range password {
+		if unicode.IsUpper(char) {
+			return true
+		}
+	}
+	return false
+}
+func HasSpecialChar(password string) bool {
+	for _, char := range password {
+		if !unicode.IsLetter(char) && !unicode.IsNumber(char) {
+			return true
+		}
+	}
+	return false
+}
 func CheckPassword(fl validator.FieldLevel, v *UserValid) bool {
 	password := fl.Field().String()
 	if len(password) < minNameLenght {
@@ -57,51 +73,23 @@ func CheckPassword(fl validator.FieldLevel, v *UserValid) bool {
 		v.validErr["password"] += "long,"
 		return false
 	}
-	hasUpperCase := false
-	hasSpecialChar := false
-	hasDigit := false
-	hasSequence := false
-	hasCommonWord := false
 
-	for _, char := range password {
-		if unicode.IsUpper(char) {
-			hasUpperCase = true
-		} else if !unicode.IsLetter(char) && !unicode.IsNumber(char) {
-			hasSpecialChar = true
-		}
-	}
-
-	if HasDigit(password) {
-		hasDigit = true
-	}
-
-	if HasSequence(password) {
-		hasSequence = true
-	}
-
-	if HasCommonWord(password) {
-		hasCommonWord = true
-	}
-	if !hasUpperCase == false {
+	if !HasUpper(password) {
 		v.validErr["password"] += "uppercase,"
 	}
-	if hasSpecialChar == false {
+	if !HasSpecialChar(password) {
 		v.validErr["password"] += "special character,"
 	}
-	if hasDigit == false {
+	if !HasDigit(password) {
 		v.validErr["password"] += "digit,"
 	}
-	if !hasSequence == false {
+	if HasSequence(password) {
 		v.validErr["password"] += "sequence,"
 	}
-	if !hasCommonWord == false {
+	if HasCommonWord(password) {
 		v.validErr["password"] += "common word,"
 	}
-	if (hasUpperCase && hasSpecialChar && hasDigit && hasSequence && hasCommonWord) == false {
-		return false
-	}
-
-	return true
+	return len(v.validErr) == 0
 }
 
 func CheckDate(fl validator.FieldLevel, v *UserValid) bool {
