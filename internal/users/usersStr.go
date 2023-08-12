@@ -1,17 +1,20 @@
 package users
 
-import (
-	"time"
-)
+import Tweets "Twitter_like_application/internal/tweets"
 
 type Users struct {
 	ID                 int
-	Name               string `json:"name"`
-	Password           string `json:"password"`
-	Email              string `json:"email"`
+	Name               string `json:"name" validate:"omitempty"`
+	Password           string `json:"password" validate:"omitempty"`
+	Email              string `json:"email" validate:"omitempty,email"`
 	EmailToken         string
 	ConfirmEmailToken  bool
 	ResetPasswordToken string
+	BirthDate          string `json:"birthdate" validate:"omitempty"`
+	Nickname           string `json:"nickname" validate:"omitempty"`
+	Bio                string `json:"bio" validate:"omitempty"`
+	Location           string `json:"location" validate:"omitempty"`
+	Tweets.Tweet
 	BirthDate          string `json:"birthdate"`
 	Nickname           string `json:"nickname"`
 	Bio                string `json:"bio"`
@@ -58,7 +61,7 @@ type Tweet struct {
 }
 
 type ReplayTweet struct {
-	Tweet
+	Tweets.Tweet
 }
 
 type DeleteUserST struct {
