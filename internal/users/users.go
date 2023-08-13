@@ -10,7 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -18,7 +18,6 @@ import (
 	"net/smtp"
 	"net/url"
 	"strings"
-	"time"
 )
 
 type UserValid struct {
@@ -80,7 +79,7 @@ func AuthHandler(next http.Handler) http.Handler {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	newUser := &Users{}
+	newUser := &User{}
 	err := json.NewDecoder(r.Body).Decode(newUser)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -124,117 +123,17 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newUser)
 }
 
-func LoginUsers(w http.ResponseWriter, r *http.Request) {
-	user := &Users{}
-	err := json.NewDecoder(r.Body).Decode(user)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	query := "SELECT id, password FROM users_tweeter WHERE email = $1"
-	var userID int
-	var savedPassword string
-	err = pg.DB.QueryRow(query, user.Email).Scan(&userID, &savedPassword)
-	if err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(savedPassword), []byte(user.Password))
-	if err == nil {
-		sessionID := uuid.New().String()
-
-		cookie := &http.Cookie{
-			Name:     "session",
-			Value:    sessionID,
-			Expires:  time.Now().AddDate(0, 0, 30),
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, cookie)
-
-		insertQuery := "INSERT INTO user_session (user_id, login_token, timestamp) VALUES ($1, $2, $3)"
-		_, err = pg.DB.Exec(insertQuery, userID, cookie.Value, time.Now())
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		response := map[string]interface{}{
-			"status":  "success",
-			"message": "Authentication successful",
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-	} else if err == bcrypt.ErrMismatchedHashAndPassword {
-		response := map[string]interface{}{
-			"status":  "error",
-			"message": "Invalid email or password",
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-	} else {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
-func LogoutUser(w http.ResponseWriter, r *http.Request) {
-	apikey := r.Header.Get("X-API-KEY")
-	fmt.Println(apikey)
-	if apikey == "" {
-		cookie, err := r.Cookie("session")
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		err = DeleteUserSession(cookie.Value)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		cookie = &http.Cookie{
-			Name:    "session",
-			Value:   "",
-			Expires: time.Now().AddDate(0, 0, -1),
-			Path:    "/",
-		}
-		http.SetCookie(w, cookie)
-
-		response := map[string]interface{}{
-			"status":  "success",
-			"message": "Logged out successfully",
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-	} else {
-		err := DeleteUserSession(apikey)
-		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		response := map[string]interface{}{
-			"status":  "success",
-			"message": "Logged out successfully",
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
-	}
-}
-
 func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(string)
 
-	var userResPass Users
+	var userResPass User
 	err := json.NewDecoder(r.Body).Decode(&userResPass)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	query := "SELECT name, email  FROM users_tweeter WHERE id = $1"
-	var user Users
+	var user User
 	err = pg.DB.QueryRow(query, userID).Scan(&user.Name, &user.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -247,7 +146,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	ResetPasswordPlusEmail(&userResPass)
 }
 
-func ResetPasswordPlusEmail(user *Users) {
+func ResetPasswordPlusEmail(user *User) {
 
 	resetToken := services.GenerateResetToken()
 	user.ResetPasswordToken = resetToken
@@ -270,47 +169,6 @@ func ResetPasswordPlusEmail(user *Users) {
 	}
 	return
 }
-
-func EditProfile(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value("userID").(int)
-
-	var updatedProfile Users
-	err := json.NewDecoder(r.Body).Decode(&updatedProfile)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	query := "UPDATE users_tweeter SET username = $1, nickname = $2, birthdate = $3, email = $4, password = $5 WHERE id = $6"
-	values := []interface{}{updatedProfile.Name, updatedProfile.Nickname, updatedProfile.BirthDate, updatedProfile.Email, updatedProfile.Password, userID}
-
-	if updatedProfile.Password != "" {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(updatedProfile.Password), bcrypt.DefaultCost)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		query += ", password = $5"
-		values = append(values, hashedPassword)
-	}
-
-	query += " WHERE id = $6"
-	values = append(values, userID)
-
-	_, err = pg.DB.Exec(query, values...)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response := map[string]interface{}{
-		"status":  "success",
-		"message": "Profile updated successfully",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-
 func GetFollowers(w http.ResponseWriter, r *http.Request) {
 	userID := r.FormValue("user_id")
 	if userID == "" {
@@ -326,10 +184,10 @@ func GetFollowers(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var followers []Users
+	var followers []User
 
 	for rows.Next() {
-		var follower Users
+		var follower User
 		err := rows.Scan(&follower.UserID, &follower.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -362,10 +220,10 @@ func GetFollowing(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var following []Users
+	var following []User
 
 	for rows.Next() {
-		var followee Users
+		var followee User
 		err := rows.Scan(&followee.UserID, &followee.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -400,10 +258,10 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var users []Users
+	var users []User
 
 	for rows.Next() {
-		var user Users
+		var user User
 		err := rows.Scan(&user.ID, &user.Name, &user.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -445,8 +303,7 @@ func GetStatistics(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(statistics)
 }
-
-func CheckEmail(newUser *Users) string {
+func CheckEmail(newUser *User) string {
 	token := make([]byte, 32)
 	_, err := rand.Read(token)
 	if err != nil {
@@ -481,7 +338,7 @@ func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	userID := vars["id"]
 
 	query := "SELECT id, name, bio FROM users_tweeter WHERE id = $1"
-	var user Users
+	var user User
 	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Bio)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
