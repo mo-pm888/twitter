@@ -10,6 +10,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -17,7 +18,6 @@ import (
 	"net/smtp"
 	"net/url"
 	"strings"
-	"time"
 )
 
 type UserValid struct {
