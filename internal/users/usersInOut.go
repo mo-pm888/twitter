@@ -66,7 +66,7 @@ func LogIn(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 
-	insertQuery := "INSERT INTO user_session (user_id, login_token, timestamp) VALUES ($1, $2, $3)"
+	insertQuery := "INSERT INTO user_session (user_id, session_id, timestamp) VALUES ($1, $2, $3)"
 	_, err = pg.DB.Exec(insertQuery, userID, cookie.Value, time.Now())
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
