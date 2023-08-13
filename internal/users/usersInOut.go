@@ -21,7 +21,7 @@ const (
 	EmailMaxLength    = 320
 )
 
-func Login(w http.ResponseWriter, r *http.Request) {
+func LogIn(w http.ResponseWriter, r *http.Request) {
 	request := &LoginRequest{}
 	err := json.NewDecoder(r.Body).Decode(request)
 	if err != nil {
@@ -48,12 +48,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(savedPassword), []byte(request.Password))
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			response := map[string]interface{}{
-				"status":  "error",
-				"message": "Invalid email or password",
-			}
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(response)
+			services.ReturnJSON(w, http.StatusUnauthorized, "Invalid email or password")
 			return
 		}
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
@@ -78,15 +73,10 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := map[string]interface{}{
-		"status":  "success",
-		"message": "Authentication successful",
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	services.ReturnJSON(w, http.StatusOK, "Authentication succeeded")
 }
 
-func LogoutUser(w http.ResponseWriter, r *http.Request) {
+func LogOut(w http.ResponseWriter, r *http.Request) {
 	apikey := r.Header.Get("X-API-KEY")
 	if apikey == "" {
 		cookie, err := r.Cookie("session")
@@ -97,7 +87,7 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 
 		err = DeleteUserSession(cookie.Value)
 		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+			services.ReturnErr(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -108,34 +98,13 @@ func LogoutUser(w http.ResponseWriter, r *http.Request) {
 			Path:    "/",
 		}
 		http.SetCookie(w, cookie)
-
-		response := map[string]interface{}{
-			"status":  "success",
-			"message": "Logged out successfully",
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		services.ReturnJSON(w, http.StatusOK, "Exit completed successfully")
 	} else {
-		err := DeleteUserSession(apikey)
+		err := DeleteUserSession(r.Header.Get("X-API-KEY"))
 		if err != nil {
-			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+			services.ReturnErr(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		response := map[string]interface{}{
-			"status":  "success",
-			"message": "Logged out successfully",
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(response)
+		services.ReturnJSON(w, http.StatusOK, "Exit completed successfully")
 	}
-}
-
-func DeleteUserSession(token string) error {
-	query := "DELETE FROM user_session WHERE login_token = $1"
-	_, err := pg.DB.Exec(query, token)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

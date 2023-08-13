@@ -40,7 +40,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 //func TestLoginUsers(t *testing.T) {
-//	server := httptest.NewServer(http.HandlerFunc(Serviceuser.Login))
+//	server := httptest.NewServer(http.HandlerFunc(Serviceuser.LogIn))
 //	defer server.Close()
 //
 //	formData := strings.NewReader("usermail=test@example.com&password=123456")
@@ -62,7 +62,7 @@ func TestCreateUser(t *testing.T) {
 //}
 //
 //func TestLogoutUser(t *testing.T) {
-//	server := httptest.NewServer(http.HandlerFunc(Serviceuser.LogoutUser))
+//	server := httptest.NewServer(http.HandlerFunc(Serviceuser.LogOut))
 //	defer server.Close()
 //
 //	req, err := http.NewRequest("GET", server.URL, nil)

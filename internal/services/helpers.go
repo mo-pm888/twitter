@@ -164,7 +164,6 @@ func CheckPassword(w http.ResponseWriter, password string) {
 }
 func ReturnJSON(w http.ResponseWriter, statusCode int, message string) {
 	response := map[string]interface{}{
-		"status":  "success",
 		"message": message,
 	}
 

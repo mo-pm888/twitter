@@ -17,8 +17,8 @@ func Server() error {
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", Serviceuser.CreateUser).Methods(http.MethodPost)
-	r.HandleFunc("/v1/users/login", Serviceuser.Login).Methods(http.MethodPost)
-	http.Handle("/v1/users/logout", Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.LogoutUser)))
+	r.HandleFunc("/v1/users/login", Serviceuser.LogIn).Methods(http.MethodPost)
+	http.Handle("/v1/users/logout", Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.LogOut)))
 	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetCurrentProfile)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
