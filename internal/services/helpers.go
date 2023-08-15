@@ -162,9 +162,9 @@ func CheckPassword(w http.ResponseWriter, password string) {
 		return
 	}
 }
-func ReturnJSON(w http.ResponseWriter, statusCode int, message string) {
+func ReturnJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	response := map[string]interface{}{
-		"message": message,
+		"message": data,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
