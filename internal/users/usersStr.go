@@ -1,6 +1,9 @@
 package users
 
-import Tweets "Twitter_like_application/internal/tweets"
+import (
+	Tweets "Twitter_like_application/internal/tweets"
+	"time"
+)
 
 type User struct {
 	ID                 int
@@ -15,13 +18,6 @@ type User struct {
 	Bio                string `json:"bio" validate:"omitempty"`
 	Location           string `json:"location" validate:"omitempty"`
 	Tweets.Tweet
-	BirthDate          string `json:"birthdate"`
-	Nickname           string `json:"nickname"`
-	Bio                string `json:"bio"`
-	Location           string `json:"location"`
-	Tweet
-	Following []int
-	Followers []int
 }
 type GetCurrentUser struct {
 	Name      string `json:"name"`
