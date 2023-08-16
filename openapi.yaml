@@ -345,7 +345,52 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
-
+  /v1/tweets/{id_tweet}/unblock:
+    patch:
+      tags:
+        - Admin
+      summary: Unblock tweet
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: Tweet ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Unblock user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: Internal Server Error
+  /v1/tweets/{id_tweet}/block:
+      patch:
+        tags:
+          - Admin
+        summary: Block tweet
+        security:
+          - apiKey: [ ]
+        parameters:
+          - name: id
+            in: path
+            description: Tweet ID
+            required: true
+            schema:
+              type: integer
+        responses:
+          '200':
+            description: Block user
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/SuccessResponse'
+          '500':
+            description: Internal Server Error
 
 components:
   schemas:
