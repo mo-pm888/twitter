@@ -79,6 +79,12 @@ var items = []darwin.Migration{
 			timestamp TIMESTAMP WITH TIME ZONE NOT NULL
 		)`,
 	},
+	{
+		Version:     13,
+		Description: `add column`,
+		Script: `alter table tweets add block bool default false not null;
+		`,
+	},
 }
 
 func Run(db *sql.DB) error {
