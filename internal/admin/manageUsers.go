@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -15,7 +16,8 @@ type UsersList struct {
 }
 
 func BlockUser(w http.ResponseWriter, r *http.Request) {
-	err, userID := UpdateUserBlockStatus(r.Context(), true)
+	userID := mux.Vars(r)["id_user"]
+	err := UpdateUserBlockStatus(r.Context(), true, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -23,7 +25,8 @@ func BlockUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UnblockUser(w http.ResponseWriter, r *http.Request) {
-	err, userID := UpdateUserBlockStatus(r.Context(), false)
+	userID := mux.Vars(r)["id_user"]
+	err := UpdateUserBlockStatus(r.Context(), false, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -48,14 +51,13 @@ func GetAllUnblockUsers(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusOK, userList)
 }
 
-func UpdateUserBlockStatus(ctx context.Context, status bool) (error, string) {
-	var userID string
+func UpdateUserBlockStatus(ctx context.Context, status bool, userID string) error {
 	query := "UPDATE users_tweeter SET block = $1 WHERE id = $2"
 	_, err := pg.DB.ExecContext(ctx, query, status, userID)
 	if err != nil {
-		return err, userID
+		return err
 	}
-	return nil, userID
+	return nil
 }
 
 func GetAllUsers(ctx context.Context, block bool) ([]UsersList, error) {
