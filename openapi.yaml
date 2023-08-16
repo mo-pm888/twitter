@@ -457,7 +457,84 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
-
+  /v1/users/{id_user}/block:
+    patch:
+      tags:
+        - Admin
+      summary: Block user
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Block user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: Internal Server Error
+  /v1/users/{id_user}/unblock:
+    patch:
+      tags:
+        - Admin
+      summary: Unblock user
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Unblock user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: Internal Server Error
+  /v1/users/get_unblock:
+    get:
+      tags:
+        - Admin
+      summary: Get unblock user
+      security:
+        - apiKey: [ ]
+      responses:
+        '200':
+          description: Unblock user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUsersResponse'
+        '500':
+          description: Internal Server Error
+  /v1/users/get_block:
+    get:
+      tags:
+        - Admin
+      summary: Get block user
+      security:
+        - apiKey: [ ]
+      responses:
+        '200':
+          description: GetBlock user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUsersResponse'
+        '500':
+          description: Internal Server Error
 components:
   schemas:
     User:
@@ -641,11 +718,16 @@ components:
         location:
           type: string
           format: string
+    GetUsersResponse:
+      type: object
+      properties:
+        ID:
+          type: integer
+        Username:
+          type: string
     SuccessResponse:
       type: object
       properties:
-        status:
-          type: string
         message:
           type: string
   securitySchemes:
