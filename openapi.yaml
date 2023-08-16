@@ -457,7 +457,29 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
-
+  /v1/tweet/length/{new_length}:
+    patch:
+      tags:
+        - Admin
+      summary: Set new tweet length
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: new length
+          in: path
+          description: New length
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: tweet length was changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: Internal Server Error
 components:
   schemas:
     User:

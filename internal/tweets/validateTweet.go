@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	maxLenghtTweet = 400
+	MaxLengthTweet = 400
 )
 
 func (v *TweetValid) Error() string {
@@ -22,7 +22,7 @@ func (v *TweetValid) Error() string {
 
 func CheckTweetText(fl validator.FieldLevel, v *TweetValid) bool {
 	text := fl.Field().String()
-	if len(text) > maxLenghtTweet {
+	if len(text) > MaxLengthTweet {
 		v.ValidErr["name"] += "long text,"
 	}
 	return true
