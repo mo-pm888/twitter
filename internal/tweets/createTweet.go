@@ -26,8 +26,8 @@ func CreateNewTweet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = tweetValid.Validate.Struct(newTweet)
-	if !CheckVisibility(&newTweet, tweetValid) {
-		services.ReturnErr(w, tweetValid.Error(), http.StatusInternalServerError)
+	if !newTweet.isValid() {
+		services.ReturnErr(w, "There must be only one visibility parameter", http.StatusInternalServerError)
 		return
 	}
 

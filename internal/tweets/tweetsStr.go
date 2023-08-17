@@ -16,6 +16,7 @@ type Tweet struct {
 	ParentTweetId int       `json:"parent_tweet_id"`
 	Visibility
 }
+
 type CreatNewTweet struct {
 	TweetID             int
 	Text                string `json:"text" validate:"required,checkTweetText"`
@@ -24,6 +25,7 @@ type CreatNewTweet struct {
 	OnlyFollowers       bool `json:"only_followers"`
 	OnlyMutualFollowers bool `json:"only_mutual_followers"`
 	OnlyMe              bool `json:"only_me"`
+	Visibility
 }
 
 type TweetValid struct {

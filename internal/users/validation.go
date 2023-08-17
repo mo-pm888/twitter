@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	maxNameLenght = 100
-	minNameLenght = 8
-	maxlenghtBio  = 400
+	maxNameLength = 100
+	minNameLength = 8
+	maxlengthBio  = 400
 )
 
 var (
@@ -65,11 +65,11 @@ func HasSpecialChar(password string) bool {
 }
 func CheckPassword(fl validator.FieldLevel, v *UserValid) bool {
 	password := fl.Field().String()
-	if len(password) < minNameLenght {
+	if len(password) < minNameLength {
 		v.validErr["password"] += "short,"
 		return false
 	}
-	if len(password) > maxNameLenght {
+	if len(password) > maxNameLength {
 		v.validErr["password"] += "long,"
 		return false
 	}
@@ -111,7 +111,7 @@ func CheckDate(fl validator.FieldLevel, v *UserValid) bool {
 func CheckName(fl validator.FieldLevel, v *UserValid) bool {
 	name := fl.Field().String()
 	u := NameVal{}
-	if len(name) > maxNameLenght {
+	if len(name) > maxNameLength {
 		v.validErr["name"] += "long name,"
 		u.long = true
 	}
@@ -129,14 +129,14 @@ func CheckName(fl validator.FieldLevel, v *UserValid) bool {
 
 func CheckNickName(fl validator.FieldLevel, v *UserValid) bool {
 	nickname := fl.Field().String()
-	if len(nickname) > maxNameLenght {
+	if len(nickname) > maxNameLength {
 		v.validErr["nickname"] = "long"
 	}
 	return true
 
 }
 func CheckBio(fl validator.FieldLevel, v *UserValid) bool {
-	if len(fl.Field().String()) > maxlenghtBio {
+	if len(fl.Field().String()) > maxlengthBio {
 		v.validErr["bio"] = "long"
 	}
 	return true
@@ -144,7 +144,7 @@ func CheckBio(fl validator.FieldLevel, v *UserValid) bool {
 }
 func CheckLocation(fl validator.FieldLevel, v *UserValid) bool {
 	location := fl.Field().String()
-	if len(location) > maxNameLenght {
+	if len(location) > maxNameLength {
 		v.validErr["location"] = "long"
 	}
 	return true

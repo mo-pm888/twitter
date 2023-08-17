@@ -2,8 +2,6 @@ package tweets
 
 import (
 	"Twitter_like_application/internal/database/pg"
-	_ "Twitter_like_application/internal/database/pg"
-	Serviceuser "Twitter_like_application/internal/users"
 	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -19,7 +17,7 @@ func GetTweet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := "SELECT id, user_id, content FROM tweets WHERE id = $1"
-	var tweet Serviceuser.Tweet
+	var tweet Tweet
 	err := pg.DB.QueryRow(query, tweetID).Scan(&tweet.TweetID, &tweet.UserID, &tweet.Text)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

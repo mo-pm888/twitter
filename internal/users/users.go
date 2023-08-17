@@ -1,7 +1,6 @@
 package users
 
 import (
-	_ "Twitter_like_application/internal/database/pg"
 	pg "Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
 	"context"
@@ -140,7 +139,7 @@ func GetFollowers(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var follower User
-		err := rows.Scan(&follower.UserID, &follower.Name)
+		err := rows.Scan(&follower.ID, &follower.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -176,7 +175,7 @@ func GetFollowing(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var followee User
-		err := rows.Scan(&followee.UserID, &followee.Name)
+		err := rows.Scan(&followee.ID, &followee.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
