@@ -57,8 +57,16 @@ func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next htt
 			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		query = "SELECT admin FROM users_tweeter WHERE id = $1"
+		var isAdmin bool
+		err = pg.DB.QueryRow(query, userID).Scan(&isAdmin)
+		if err != nil {
+			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		ctx := context.WithValue(r.Context(), "userID", userID)
+		ctx = context.WithValue(ctx, "isAdmin", isAdmin)
 		r = r.WithContext(ctx)
 
 	} else {
