@@ -303,7 +303,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  v1/tweets/{id_tweet}/like:
+  /v1/tweets/{id_tweet}/like:
     post:
       tags:
         - Tweets
@@ -328,7 +328,7 @@ paths:
           description: Bad request
         '500':
           description: Internal server error
-  v1/tweets/{id_tweet}/unlike:
+  /v1/tweets/{id_tweet}/unlike:
     delete:
       tags:
         - Tweets
@@ -457,7 +457,22 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
-
+  /v1/admin/stats:
+    get:
+      tags:
+        - Admins
+      summary: Get counts of all users and tweets
+      security:
+        - apiKey: [ ]
+      responses:
+        '200':
+          description: Counts of all users and tweets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCountsUsersAndTweets'
+        '500':
+          description: Internal Server Error
 components:
   schemas:
     User:
@@ -533,6 +548,13 @@ components:
         subscription:
           type: integer
 
+    GetCountsUsersAndTweets:
+      type: object
+      properties:
+        countUsers:
+          type: integer
+        countTweets:
+          type: integer
 
     UpdateUserProfile:
       type: object

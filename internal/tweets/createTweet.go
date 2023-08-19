@@ -1,13 +1,15 @@
 package tweets
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"time"
+
+	"Twitter_like_application/internal/database/pg"
+	"Twitter_like_application/internal/services"
+
+	"github.com/go-playground/validator/v10"
 )
 
 func CreateNewTweet(w http.ResponseWriter, r *http.Request) {
@@ -26,10 +28,10 @@ func CreateNewTweet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = tweetValid.Validate.Struct(newTweet)
-	if !CheckVisibility(&newTweet, tweetValid) {
-		services.ReturnErr(w, tweetValid.Error(), http.StatusInternalServerError)
-		return
-	}
+	//if !CheckVisibility(&newTweet, tweetValid) {
+	//	services.ReturnErr(w, tweetValid.Error(), http.StatusInternalServerError)
+	//	return
+	//}
 
 	query := `INSERT INTO tweets (user_id, text, created_at, public, only_followers, only_mutual_followers, only_me)
 		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING tweet_id`
