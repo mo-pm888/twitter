@@ -1,13 +1,15 @@
 package users
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"database/sql"
 	"encoding/json"
+	"net/http"
+
+	"Twitter_like_application/internal/database/pg"
+	"Twitter_like_application/internal/services"
+
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {

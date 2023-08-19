@@ -16,7 +16,7 @@ import (
 
 func Server(c config.Config) error {
 	r := mux.NewRouter()
-	fmt.Printf("Server > host:%s:%s", c.ServerHost, c.ServerPort)
+	fmt.Printf("starting server on %s:%s", c.ServerHost, c.ServerPort)
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", Serviceuser.CreateUser).Methods(http.MethodPost)
