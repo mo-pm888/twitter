@@ -1,19 +1,22 @@
 package server
 
 import (
-	"Twitter_like_application/internal/admin"
-	Tweets "Twitter_like_application/internal/tweets"
-	Serviceuser "Twitter_like_application/internal/users"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"net/http/httptest"
+
+	"Twitter_like_application/config"
+	"Twitter_like_application/internal/admin"
+	Tweets "Twitter_like_application/internal/tweets"
+	Serviceuser "Twitter_like_application/internal/users"
+
+	"github.com/gorilla/mux"
 )
 
-func Server() error {
+func Server(c config.Config) error {
 	r := mux.NewRouter()
-	fmt.Printf("Server was run %s:%s\n", admin.ServerHost, admin.ServerPort)
+	fmt.Printf("Server > host:%s:%s", c.ServerHost, c.ServerPort)
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", Serviceuser.CreateUser).Methods(http.MethodPost)
@@ -53,8 +56,8 @@ func Server() error {
 		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.UnlikeTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodDelete)
 	r.HandleFunc("/v1/admin/stats", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(admin.Stats)).ServeHTTP(w, r)
-	}).Methods(http.MethodDelete)
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.Stats)).ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
 	r.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "*")
@@ -62,7 +65,7 @@ func Server() error {
 		w.WriteHeader(http.StatusOK)
 
 	})
-	err := http.ListenAndServe(fmt.Sprintf("%s:%s", admin.ServerHost, admin.ServerPort), r)
+	err := http.ListenAndServe(fmt.Sprintf("%s:%s", c.ServerHost, c.ServerPort), r)
 	fmt.Println(err)
 	return err
 }

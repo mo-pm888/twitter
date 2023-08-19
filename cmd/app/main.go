@@ -1,11 +1,13 @@
 package main
 
 import (
-	"Twitter_like_application/internal/admin"
+	"fmt"
+	"log"
+
+	"Twitter_like_application/config"
 	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/server"
 	"Twitter_like_application/migrations"
-	"fmt"
 )
 
 type ServiceMongoDb struct {
@@ -13,11 +15,12 @@ type ServiceMongoDb struct {
 }
 
 func main() {
-	err := admin.LoadEnvFile()
+	c, err := config.New()
 	if err != nil {
 		fmt.Println(err)
+		log.Fatal()
 	}
-	err = pg.ConnectPostgresql()
+	err = pg.ConnectPostgresql(*c)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -27,7 +30,7 @@ func main() {
 	} else {
 		fmt.Println("**** running migrations ****", err)
 	}
-	err = server.Server()
+	err = server.Server(*c)
 	if err != nil {
 		fmt.Println(err)
 	}

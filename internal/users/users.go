@@ -57,8 +57,16 @@ func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next htt
 			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		query = "SELECT admin FROM users_tweeter WHERE id = $1"
+		var isAdmin bool
+		err = pg.DB.QueryRow(query, userID).Scan(&isAdmin)
+		if err != nil {
+			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		ctx := context.WithValue(r.Context(), "userID", userID)
+		ctx = context.WithValue(ctx, "isAdmin", isAdmin)
 		r = r.WithContext(ctx)
 
 	} else {
@@ -68,10 +76,57 @@ func handleAuthenticatedRequest(w http.ResponseWriter, r *http.Request, next htt
 
 	next.ServeHTTP(w, r)
 }
+func handleAuthenticatedRequestAdmin(w http.ResponseWriter, r *http.Request, next http.Handler) {
+	apikey := r.Header.Get("X-API-KEY")
+	cookie, err := r.Cookie("session")
+	if apikey == "" && (err != nil || cookie == nil) {
+		services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	var sessionID string
+	if apikey != "" {
+		sessionID = apikey
+	} else if cookie != nil {
+		sessionID = cookie.Value
+	}
+	if cookie != nil || apikey != "" {
+		query := `SELECT us.user_id, ut.admin FROM user_session us JOIN users_tweeter ut ON us.user_id = ut.id WHERE us.session_id = $1`
+
+		var userID int
+		var isAdmin bool
+		err = pg.DB.QueryRow(query, sessionID).Scan(&userID, &isAdmin)
+		if err != nil {
+			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "userID", userID)
+		ctx = context.WithValue(r.Context(), "isAdmin", isAdmin)
+		r = r.WithContext(ctx)
+
+	}
+
+}
 
 func AuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handleAuthenticatedRequest(w, r, next)
+		if r.Context().Value("userID").(string) != "" {
+			next.ServeHTTP(w, r)
+		} else {
+			services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
+		}
+
+	})
+}
+func AdminAuthHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		handleAuthenticatedRequestAdmin(w, r, next)
+		if r.Context().Value("isAdmin").(string) != "" {
+			next.ServeHTTP(w, r)
+		} else {
+			services.ReturnErr(w, "Unauthorized as an admin", http.StatusUnauthorized)
+		}
 	})
 }
 

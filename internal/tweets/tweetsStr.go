@@ -30,3 +30,6 @@ type TweetValid struct {
 	Validate *validator.Validate
 	ValidErr map[string]string
 }
+type ReplayTweet struct {
+	Tweet
+}
