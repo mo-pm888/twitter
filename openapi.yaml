@@ -477,7 +477,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/SuccessResponseList'
         '500':
           description: Internal Server Error
   /v1/users/{id_user}/followings:
@@ -500,7 +500,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/SuccessResponseList'
         '500':
           description: Internal Server Error
 components:
@@ -686,6 +686,11 @@ components:
         location:
           type: string
           format: string
+    SuccessResponseList:
+      type: object
+      properties:
+        status:
+          type: integer
     SuccessResponse:
       type: object
       properties:
