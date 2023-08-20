@@ -1,22 +1,28 @@
 package services
 
 import (
-	Postgresql "Twitter_like_application/internal/database/pg"
-	//Serviceuser "Twitter_like_application/internal/users"
-
 	"bufio"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
+
+	"Twitter_like_application/internal/database/pg"
+	//Serviceuser "Twitter_like_application/internal/users"
 )
 
 type ErrResponse struct {
 	Errtext string `json:"errtext"`
 }
+
+var (
+	emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	emailLen   = 320
+)
 
 func GenerateResetToken() string {
 	const resetTokenLength = 32
@@ -39,7 +45,7 @@ func ConvertStringToNumber(str string) (int, error) {
 func UserExists(userID string) bool {
 	query := "SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)"
 	var exists bool
-	err := Postgresql.DB.QueryRow(query, userID).Scan(&exists)
+	err := pg.DB.QueryRow(query, userID).Scan(&exists)
 	if err != nil {
 		return false
 	}
@@ -49,7 +55,7 @@ func UserExists(userID string) bool {
 func IsUserFollowing(currentUserID, targetUserID int) bool {
 	query := "SELECT EXISTS (SELECT 1 FROM subscriptions WHERE user_id = $1 AND target_user_id = $2)"
 	var exists bool
-	err := Postgresql.DB.QueryRow(query, currentUserID, targetUserID).Scan(&exists)
+	err := pg.DB.QueryRow(query, currentUserID, targetUserID).Scan(&exists)
 	if err != nil {
 		return false
 	}
@@ -84,7 +90,7 @@ func ExtractUserIDFromSessionCookie(cookieValue string) (string, error) {
 }
 func GetSubscribedUserIDs(userID string) ([]int, error) {
 	query := "SELECT subscribed_user_id FROM subscriptions WHERE user_id = $1"
-	rows, err := Postgresql.DB.Query(query, userID)
+	rows, err := pg.DB.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +116,7 @@ func GetSubscribedUserIDs(userID string) ([]int, error) {
 func GetUserCount() (int, error) {
 	query := "SELECT COUNT(*) FROM users"
 	var count int
-	err := Postgresql.DB.QueryRow(query).Scan(&count)
+	err := pg.DB.QueryRow(query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -120,7 +126,7 @@ func GetUserCount() (int, error) {
 func GetTweetCount() (int, error) {
 	query := "SELECT COUNT(*) FROM tweets"
 	var count int
-	err := Postgresql.DB.QueryRow(query).Scan(&count)
+	err := pg.DB.QueryRow(query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -133,4 +139,33 @@ func ReturnErr(w http.ResponseWriter, err string, code int) {
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errj)
+}
+func CheckEmail(w http.ResponseWriter, email string) {
+	if !emailRegex.MatchString(email) {
+		ReturnErr(w, "Invalid email format", http.StatusBadRequest)
+		return
+	}
+	if len(email) > 320 {
+		ReturnErr(w, "Name exceeds maximum length", http.StatusBadRequest)
+		return
+	}
+}
+func CheckPassword(w http.ResponseWriter, password string) {
+	passwordRegex := regexp.MustCompile(`^[a-zA-Z]+$`)
+	if !passwordRegex.MatchString(password) {
+		ReturnErr(w, "Invalid password format", http.StatusBadRequest)
+		return
+	}
+	if len(password) > 100 {
+		ReturnErr(w, "Password exceeds maximum length", http.StatusBadRequest)
+		return
+	}
+}
+func ReturnJSON(w http.ResponseWriter, statusCode int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		ReturnErr(w, err.Error(), http.StatusInternalServerError)
+	}
 }

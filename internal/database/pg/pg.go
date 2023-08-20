@@ -3,14 +3,10 @@ package pg
 import (
 	"database/sql"
 	"fmt"
-)
 
-const (
-	postgresUsername = "postgres"
-	postgresPassword = "postgrespw"
-	postgresDBip     = "localhost"
-	postgresDBName   = "tweeter"
-	portPG           = "55000"
+	"Twitter_like_application/config"
+
+	_ "github.com/lib/pq"
 )
 
 var DB *sql.DB
@@ -19,16 +15,16 @@ type ServicePostgresql struct {
 	DB *sql.DB
 }
 
-func ConnectPostgresql() error {
-	connStr := fmt.Sprintf("postgresql://%s:%s@%s:55000/%s?sslmode=disable", postgresUsername, postgresPassword, postgresDBip, postgresDBName)
-
+func ConnectPostgresql(c config.Config) error {
+	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable", c.DbUser, c.DbPassword, c.DbHost, c.DbPort, c.DbName)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
+		fmt.Println("error connect BD")
 		return err
 	}
 
 	DB = db
-	fmt.Println("PG ran....", connStr)
+	fmt.Println("**** PG ran.... ****")
 
 	return nil
 }
