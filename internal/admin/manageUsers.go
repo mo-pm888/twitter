@@ -1,18 +1,25 @@
 package admin
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"Twitter_like_application/internal/database/pg"
+	"Twitter_like_application/internal/services"
+
+	"github.com/gorilla/mux"
 )
 
 type UsersList struct {
 	ID       int    `json:"id"`
 	Username string `json:"username"`
+}
+
+type messageRequest struct {
+	UserID string `json:"id"`
+	Text   string `json:"message"`
 }
 
 func BlockUser(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +28,11 @@ func BlockUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	services.ReturnJSON(w, http.StatusOK, fmt.Sprintf("user %s was blocked", userID))
+	message := messageRequest{
+		UserID: userID,
+		Text:   fmt.Sprintf("user %s was blocked", userID),
+	}
+	services.ReturnJSON(w, http.StatusOK, message)
 }
 
 func UnblockUser(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +41,11 @@ func UnblockUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	services.ReturnJSON(w, http.StatusOK, fmt.Sprintf("user %s was unblocked", userID))
+	message := messageRequest{
+		UserID: userID,
+		Text:   fmt.Sprintf("user %s was unblocked", userID),
+	}
+	services.ReturnJSON(w, http.StatusOK, message)
 }
 
 func GetAllBlockUsers(w http.ResponseWriter, r *http.Request) {
@@ -63,13 +78,13 @@ func UpdateUserBlockStatus(ctx context.Context, status bool, userID string) erro
 func GetAllUsers(ctx context.Context, block bool) ([]UsersList, error) {
 	var usersList []UsersList
 
-	query := "SELECT id, users_tweeter FROM users_tweeter WHERE block = $1"
+	query := "SELECT id,name FROM users_tweeter WHERE block = $1"
 	rows, err := pg.DB.QueryContext(ctx, query, block)
 	if err != nil {
 		return nil, err
 	}
 	defer func(rows *sql.Rows) {
-		err := rows.Close()
+		err = rows.Close()
 		if err != nil {
 
 		}

@@ -59,16 +59,16 @@ func Server(c config.Config) error {
 		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.Stats)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/{id_user}/block", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(admin.BlockUser)).ServeHTTP(w, r)
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.BlockUser)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/users/{id_user}/unblock", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(admin.UnblockUser)).ServeHTTP(w, r)
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.UnblockUser)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/users/get_unblock", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(admin.GetAllUnblockUsers)).ServeHTTP(w, r)
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.GetAllUnblockUsers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/get_block", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(admin.GetAllBlockUsers)).ServeHTTP(w, r)
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.GetAllBlockUsers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")

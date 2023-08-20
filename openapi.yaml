@@ -465,7 +465,7 @@ paths:
       security:
         - apiKey: [ ]
       parameters:
-        - name: id
+        - name: id_user
           in: path
           description: User ID
           required: true
@@ -488,7 +488,7 @@ paths:
       security:
         - apiKey: [ ]
       parameters:
-        - name: id
+        - name: id_user
           in: path
           description: User ID
           required: true
@@ -741,6 +741,8 @@ components:
         location:
           type: string
           format: string
+    GetUserResponseStr:
+      type:
     GetUsersResponse:
       type: object
       properties:
