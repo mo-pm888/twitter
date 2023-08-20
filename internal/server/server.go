@@ -55,8 +55,11 @@ func Server(c config.Config) error {
 	r.HandleFunc("/v1/tweets/{id_tweet}/unlike", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.UnlikeTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodDelete)
-	r.HandleFunc("/v1/admin/stats", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.Stats)).ServeHTTP(w, r)
+	r.HandleFunc("/v1/users/{id_user}/followers", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetAllFollowers)).ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
+	r.HandleFunc("/v1/users/{id_user}/followings", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetAllFollowings)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/{id_user}/block", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.BlockUser)).ServeHTTP(w, r)
