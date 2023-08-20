@@ -303,7 +303,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  v1/tweets/{id_tweet}/like:
+  /v1/tweets/{id_tweet}/like:
     post:
       tags:
         - Tweets
@@ -328,7 +328,7 @@ paths:
           description: Bad request
         '500':
           description: Internal server error
-  v1/tweets/{id_tweet}/unlike:
+  /v1/tweets/{id_tweet}/unlike:
     delete:
       tags:
         - Tweets
@@ -578,6 +578,13 @@ components:
         subscription:
           type: integer
 
+    GetCountsUsersAndTweets:
+      type: object
+      properties:
+        countUsers:
+          type: integer
+        countTweets:
+          type: integer
 
     UpdateUserProfile:
       type: object
