@@ -457,20 +457,50 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
-  /v1/admin/stats:
+  /v1/users/{id_user}/followers:
     get:
       tags:
-        - Admins
-      summary: Get counts of all users and tweets
+        - Users
+      summary: Get all followers
       security:
         - apiKey: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
-          description: Counts of all users and tweets
+          description: Get all of user followers
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetCountsUsersAndTweets'
+                $ref: '#/components/schemas/SuccessResponseList'
+        '500':
+          description: Internal Server Error
+  /v1/users/{id_user}/followings:
+    get:
+      tags:
+        - Users
+      summary: Get all followings
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Get all of user following
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseList'
         '500':
           description: Internal Server Error
 components:
@@ -663,6 +693,11 @@ components:
         location:
           type: string
           format: string
+    SuccessResponseList:
+      type: object
+      properties:
+        status:
+          type: integer
     SuccessResponse:
       type: object
       properties:
