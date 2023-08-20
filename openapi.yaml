@@ -741,15 +741,15 @@ components:
         location:
           type: string
           format: string
-    GetUserResponseStr:
-      type:
     GetUsersResponse:
-      type: object
-      properties:
-        ID:
-          type: integer
-        Username:
-          type: string
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          username:
+            type: string
     SuccessResponse:
       type: object
       properties:
