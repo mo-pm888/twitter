@@ -1,18 +1,16 @@
 package server
 
 import (
-	"Twitter_like_application/internal/admin"
-	Tweets "Twitter_like_application/internal/tweets"
-	Serviceuser "Twitter_like_application/internal/users"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
 
-	"Twitter_like_application/config"
 	"Twitter_like_application/internal/admin"
 	Tweets "Twitter_like_application/internal/tweets"
 	Serviceuser "Twitter_like_application/internal/users"
+
+	"Twitter_like_application/config"
 
 	"github.com/gorilla/mux"
 )
@@ -59,10 +57,10 @@ func Server(c config.Config) error {
 		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.UnlikeTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodDelete)
 	r.HandleFunc("/v1/tweets/{id_tweet}/block", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(admin.BlockTweet)).ServeHTTP(w, r)
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.BlockTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/{id_tweet}/unblock", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(admin.UnblockTweet)).ServeHTTP(w, r)
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.UnblockTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/admin/stats", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.Stats)).ServeHTTP(w, r)

@@ -379,12 +379,12 @@ paths:
   /v1/tweets/{id_tweet}/unblock:
     patch:
       tags:
-        - Admin
+        - Admins
       summary: Unblock tweet
       security:
         - apiKey: [ ]
       parameters:
-        - name: id
+        - name: id_tweet
           in: path
           description: Tweet ID
           required: true
@@ -402,12 +402,12 @@ paths:
   /v1/tweets/{id_tweet}/block:
       patch:
         tags:
-          - Admin
+          - Admins
         summary: Block tweet
         security:
           - apiKey: [ ]
         parameters:
-          - name: id
+          - name: id_tweet
             in: path
             description: Tweet ID
             required: true
