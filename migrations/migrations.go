@@ -115,6 +115,12 @@ var items = []darwin.Migration{
 		Script: `alter table users_tweeter add block bool default false not null;
 		`,
 	},
+	{
+		Version:     14,
+		Description: `add column`,
+		Script: `alter table users_tweeter add admin bool default false not null;
+		`,
+	},
 }
 
 func Run(db *sql.DB) error {

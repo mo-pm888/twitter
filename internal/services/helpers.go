@@ -1,19 +1,18 @@
 package services
 
 import (
-	Postgresql "Twitter_like_application/internal/database/pg"
-	"regexp"
-
-	//Serviceuser "Twitter_like_application/internal/users"
-
 	"bufio"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
+
+	"Twitter_like_application/internal/database/pg"
+	//Serviceuser "Twitter_like_application/internal/users"
 )
 
 type ErrResponse struct {
@@ -46,7 +45,7 @@ func ConvertStringToNumber(str string) (int, error) {
 func UserExists(userID string) bool {
 	query := "SELECT EXISTS (SELECT 1 FROM users WHERE id = $1)"
 	var exists bool
-	err := Postgresql.DB.QueryRow(query, userID).Scan(&exists)
+	err := pg.DB.QueryRow(query, userID).Scan(&exists)
 	if err != nil {
 		return false
 	}
@@ -56,7 +55,7 @@ func UserExists(userID string) bool {
 func IsUserFollowing(currentUserID, targetUserID int) bool {
 	query := "SELECT EXISTS (SELECT 1 FROM subscriptions WHERE user_id = $1 AND target_user_id = $2)"
 	var exists bool
-	err := Postgresql.DB.QueryRow(query, currentUserID, targetUserID).Scan(&exists)
+	err := pg.DB.QueryRow(query, currentUserID, targetUserID).Scan(&exists)
 	if err != nil {
 		return false
 	}
@@ -91,7 +90,7 @@ func ExtractUserIDFromSessionCookie(cookieValue string) (string, error) {
 }
 func GetSubscribedUserIDs(userID string) ([]int, error) {
 	query := "SELECT subscribed_user_id FROM subscriptions WHERE user_id = $1"
-	rows, err := Postgresql.DB.Query(query, userID)
+	rows, err := pg.DB.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +116,7 @@ func GetSubscribedUserIDs(userID string) ([]int, error) {
 func GetUserCount() (int, error) {
 	query := "SELECT COUNT(*) FROM users"
 	var count int
-	err := Postgresql.DB.QueryRow(query).Scan(&count)
+	err := pg.DB.QueryRow(query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -127,7 +126,7 @@ func GetUserCount() (int, error) {
 func GetTweetCount() (int, error) {
 	query := "SELECT COUNT(*) FROM tweets"
 	var count int
-	err := Postgresql.DB.QueryRow(query).Scan(&count)
+	err := pg.DB.QueryRow(query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -162,15 +161,11 @@ func CheckPassword(w http.ResponseWriter, password string) {
 		return
 	}
 }
-func ReturnJSON(w http.ResponseWriter, statusCode int, message string) {
-	response := map[string]interface{}{
-		"message": message,
-	}
-
+func ReturnJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	if err := json.NewEncoder(w).Encode(response); err != nil {
+	if err := json.NewEncoder(w).Encode(data); err != nil {
 		ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
 }
