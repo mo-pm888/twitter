@@ -1,12 +1,14 @@
 package users
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"context"
 	"database/sql"
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"Twitter_like_application/internal/database/pg"
+	"Twitter_like_application/internal/services"
+
+	"github.com/gorilla/mux"
 )
 
 type FollowerList struct {
