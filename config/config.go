@@ -7,13 +7,14 @@ import (
 )
 
 type Config struct {
-	DbPort     string
-	DbUser     string
-	DbPassword string
-	DbName     string
-	ServerHost string
-	ServerPort string
-	DbHost     string
+	DbPort         string
+	DbUser         string
+	DbPassword     string
+	DbName         string
+	ServerHost     string
+	ServerPort     string
+	DbHost         string
+	MaxLengthTweet string
 }
 
 func New() (*Config, error) {
@@ -34,5 +35,6 @@ func (c *Config) LoadEnvFile() error {
 	c.DbHost = os.Getenv("SERVER_HOST")
 	c.ServerPort = os.Getenv("SERVER_PORT")
 	c.ServerHost = os.Getenv("DB_PG_HOST")
+	c.MaxLengthTweet = os.Getenv("TWEET_MAX_LENGTH")
 	return nil
 }

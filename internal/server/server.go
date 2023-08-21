@@ -74,7 +74,10 @@ func Server(c config.Config) error {
 		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.GetAllBlockUsers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/tweet/length/{new_length}", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(admin.SettingTweetLength)).ServeHTTP(w, r)
+		adaptedHandler := func(w http.ResponseWriter, r *http.Request) {
+			admin.SettingTweetLength(w, r, c)
+		}
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(adaptedHandler)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
