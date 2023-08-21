@@ -2,6 +2,7 @@ package admin
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type message struct {
+type moderateTweetResponse struct {
 	TweetID string `json:"tweet_id"`
 	Message string `json:"message"`
 }
@@ -20,9 +21,10 @@ func BlockTweet(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
 	err := UpdateTweetBlockStatus(r.Context(), true, tweetID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	m := message{
+	m := moderateTweetResponse{
 		TweetID: tweetID,
 		Message: fmt.Sprintf("tweet %s was blocked", tweetID),
 	}
@@ -32,9 +34,10 @@ func UnblockTweet(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
 	err := UpdateTweetBlockStatus(r.Context(), false, tweetID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	m := message{
+	m := moderateTweetResponse{
 		TweetID: tweetID,
 		Message: fmt.Sprintf("tweet %s was unblocked", tweetID),
 	}
@@ -42,10 +45,26 @@ func UnblockTweet(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateTweetBlockStatus(ctx context.Context, status bool, tweetID string) error {
-	query := "UPDATE tweets SET block = $1 WHERE tweet_id = $2"
-	_, err := pg.DB.ExecContext(ctx, query, status, tweetID)
+	query := "SELECT EXISTS(SELECT 1 FROM tweets WHERE tweet_id = $1)"
+	var exists bool
+	err := pg.DB.QueryRowContext(ctx, query, tweetID).Scan(&exists)
 	if err != nil {
 		return err
+	}
+	if !exists {
+		return errors.New("tweet doesn't exist")
+	}
+	query = "UPDATE tweets SET block = $1 WHERE tweet_id = $2 AND block !=$1"
+	result, err := pg.DB.ExecContext(ctx, query, status, tweetID)
+	if err != nil {
+		return err
+	}
+	f, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if f == 0 {
+		return errors.New("tweet already has this status ")
 	}
 	return nil
 }

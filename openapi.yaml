@@ -379,7 +379,7 @@ paths:
   /v1/tweets/{id_tweet}/unblock:
     patch:
       tags:
-        - Admins
+        - Admin
       summary: Unblock tweet
       security:
         - apiKey: [ ]
@@ -396,13 +396,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/BlockTweetResponse'
         '500':
           description: Internal Server Error
   /v1/tweets/{id_tweet}/block:
       patch:
         tags:
-          - Admins
+          - Admin
         summary: Block tweet
         security:
           - apiKey: [ ]
@@ -419,7 +419,7 @@ paths:
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/SuccessResponse'
+                  $ref: '#/components/schemas/BlockTweetResponse'
           '500':
             description: Internal Server Error
 
@@ -827,6 +827,13 @@ components:
       type: object
       properties:
         status:
+          type: string
+        message:
+          type: string
+    BlockTweetResponse:
+      type: object
+      properties:
+        tweet_id:
           type: string
         message:
           type: string
