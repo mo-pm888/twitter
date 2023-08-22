@@ -302,7 +302,37 @@ paths:
                   $ref: '#/components/schemas/Tweet'
         '500':
           description: Internal Server Error
-
+  /v1/tweets/explore:
+    get:
+      tags:
+        - Tweets
+      security:
+        - apiKey: [ ]
+      summary: Explore
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: true
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          description: Items per page
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of tweets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tweet'
+        '500':
+          description: Internal Server Error
   /v1/tweets/{id_tweet}/like:
     post:
       tags:

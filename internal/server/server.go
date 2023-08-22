@@ -20,6 +20,7 @@ func Server(c config.Config) error {
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", Serviceuser.CreateUser).Methods(http.MethodPost)
+	r.HandleFunc("/v1/tweets/explore", Tweets.ExploreRandom).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/login", Serviceuser.LogIn).Methods(http.MethodPost)
 	http.Handle("/v1/users/logout", Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.LogOut)))
 	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {

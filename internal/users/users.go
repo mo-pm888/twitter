@@ -61,7 +61,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request) *http.Request {
 	}
 	query := `SELECT us.user_id, ut.admin FROM user_session us JOIN users_tweeter ut ON us.user_id = ut.id WHERE us.session_id = $1 LIMIT 1`
 
-	var userID int
+	var userID string
 	var isAdmin bool
 	err = pg.DB.QueryRow(query, sessionID).Scan(&userID, &isAdmin)
 	if err != nil {
