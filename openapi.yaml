@@ -291,6 +291,19 @@ paths:
       security:
         - apiKey: [ ]
       summary: Home
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: true
+          schema:
+            type: integer
+        - name: per_page
+          in: query
+          description: Items per page
+          required: true
+          schema:
+            type: integer
       responses:
         '200':
           description: List of tweets
