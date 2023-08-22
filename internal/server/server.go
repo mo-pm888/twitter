@@ -49,6 +49,9 @@ func Server(c config.Config) error {
 	r.HandleFunc("/v1/tweets/{id_tweet}/retweet", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.Retweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
+	r.HandleFunc("/v1/tweets/{id_tweet}/reply", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.CreateNewReply)).ServeHTTP(w, r)
+	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/tweets/{id_tweet}/like", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.LikeTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)

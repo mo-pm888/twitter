@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/smtp"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"Twitter_like_application/internal/database/pg"
@@ -60,7 +61,6 @@ func checkAuth(w http.ResponseWriter, r *http.Request) *http.Request {
 		return nil
 	}
 	query := `SELECT us.user_id, ut.admin FROM user_session us JOIN users_tweeter ut ON us.user_id = ut.id WHERE us.session_id = $1 LIMIT 1`
-
 	var userID int
 	var isAdmin bool
 	err = pg.DB.QueryRow(query, sessionID).Scan(&userID, &isAdmin)
@@ -68,7 +68,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request) *http.Request {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
-	ctx := context.WithValue(r.Context(), ctxKeyUserID, userID)
+	ctx := context.WithValue(r.Context(), ctxKeyUserID, strconv.Itoa(userID))
 	ctx = context.WithValue(ctx, ctxKeyIsAdmin, isAdmin)
 	return r.WithContext(ctx)
 }

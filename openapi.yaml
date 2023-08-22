@@ -234,7 +234,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  /v1/tweets/craete:
+  /v1/tweets/create:
     post:
       tags:
         - Tweets
@@ -376,6 +376,63 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
+  /v1/tweets/{tweet_id}/reply:
+    post:
+      tags:
+        - Tweets
+      summary: Reply tweet
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: tweet_id
+          in: path
+          description: ID of the tweet to edit
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                public:
+                  type: boolean
+                  default: true
+                only_followers:
+                  type: boolean
+                  default: false
+                only_mutual_followers:
+                  type: boolean
+                  default: false
+                only_me:
+                  type: boolean
+                  default: false
+              required:
+                - text
+            x-codegen-request-body-name: updatedTweet
+      responses:
+        '200':
+          description: Tweet updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReplyRequest'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /v1/tweets/{tweet_id}:
     patch:
       tags:
@@ -401,12 +458,16 @@ paths:
                   type: string
                 public:
                   type: boolean
+                  default: true
                 only_followers:
                   type: boolean
+                  default: false
                 only_mutual_followers:
                   type: boolean
+                  default: false
                 only_me:
                   type: boolean
+                  default: false
               required:
                 - text
             x-codegen-request-body-name: updatedTweet
@@ -739,12 +800,16 @@ components:
           type: string
         public:
           type: boolean
+          default: true
         only_followers:
           type: boolean
+          default: false
         only_mutual_followers:
           type: boolean
+          default: false
         only_me:
           type: boolean
+          default: false
       required:
         - text
     UserProfileUpdateRequest:
@@ -792,6 +857,13 @@ components:
             type: integer
           username:
             type: string
+    ReplyRequest:
+      type: object
+      properties:
+        parentID:
+          type: string
+        message:
+          type: string
   securitySchemes:
     apiKey:
       type: apiKey
