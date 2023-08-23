@@ -1,18 +1,19 @@
 package tweets
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"encoding/json"
-	"github.com/lib/pq"
 	"log"
 	"net/http"
+
+	"Twitter_like_application/internal/services"
+
+	"github.com/lib/pq"
 )
 
-func Home(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Home(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 	followingQuery := "SELECT following FROM follower WHERE follower = $1"
-	rows, err := pg.DB.Query(followingQuery, userID)
+	rows, err := s.DB.Query(followingQuery, userID)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -29,7 +30,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 
 	tweetsQuery := `SELECT tweet_id, text, user_id, created_at,parent_tweet_id,public,only_followers,only_mutual_followers,only_me,retweet FROM tweets WHERE user_id = ANY($1) ORDER BY created_at DESC LIMIT 10`
 	followingArray := pq.Array(followingIDs)
-	rows, err = pg.DB.Query(tweetsQuery, followingArray)
+	rows, err = s.DB.Query(tweetsQuery, followingArray)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}

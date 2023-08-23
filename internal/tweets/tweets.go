@@ -1,16 +1,17 @@
 package tweets
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	_ "Twitter_like_application/internal/database/pg"
 	"database/sql"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"net/http"
 	"time"
+
+	_ "Twitter_like_application/internal/database/pg"
+
+	"github.com/gorilla/mux"
 )
 
-func GetTweet(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Get(w http.ResponseWriter, r *http.Request) {
 	tweetID := r.URL.Query().Get("tweet_id")
 	if tweetID == "" {
 		http.Error(w, "Missing tweet ID", http.StatusBadRequest)
@@ -19,7 +20,7 @@ func GetTweet(w http.ResponseWriter, r *http.Request) {
 
 	query := "SELECT id, user_id, content FROM tweets WHERE id = $1"
 	var tweet Tweet
-	err := pg.DB.QueryRow(query, tweetID).Scan(&tweet.TweetID, &tweet.UserID, &tweet.Text)
+	err := s.DB.QueryRow(query, tweetID).Scan(&tweet.TweetID, &tweet.UserID, &tweet.Text)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -29,7 +30,7 @@ func GetTweet(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(tweet)
 }
 
-func LikeTweet(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Like(w http.ResponseWriter, r *http.Request) {
 	idTweet := mux.Vars(r)["id_tweet"]
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
@@ -40,7 +41,7 @@ func LikeTweet(w http.ResponseWriter, r *http.Request) {
 	var exists bool
 
 	query := "SELECT EXISTS (SELECT 1 FROM likes WHERE user_id = $1 AND tweet_id = $2)"
-	err := pg.DB.QueryRow(query, userID, idTweet).Scan(&exists)
+	err := s.DB.QueryRow(query, userID, idTweet).Scan(&exists)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -51,7 +52,7 @@ func LikeTweet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query = "INSERT INTO likes (tweet_id, user_id, timestamp) VALUES ($1, $2, $3)"
-	_, err = pg.DB.Exec(query, idTweet, userID, time.Now())
+	_, err = s.DB.Exec(query, idTweet, userID, time.Now())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -60,7 +61,7 @@ func LikeTweet(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func UnlikeTweet(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Unlike(w http.ResponseWriter, r *http.Request) {
 	idTweet := mux.Vars(r)["id_tweet"]
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
@@ -70,7 +71,7 @@ func UnlikeTweet(w http.ResponseWriter, r *http.Request) {
 
 	query := "DELETE FROM likes WHERE user_id = $1 AND tweet_id = $2 RETURNING true"
 	var exists bool
-	err := pg.DB.QueryRow(query, userID, idTweet).Scan(&exists)
+	err := s.DB.QueryRow(query, userID, idTweet).Scan(&exists)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			http.Error(w, "Tweet not liked", http.StatusBadRequest)
@@ -82,7 +83,7 @@ func UnlikeTweet(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func Retweet(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Retweet(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
 	userID, ok := r.Context().Value("userID").(int)
 	if !ok {
@@ -103,7 +104,7 @@ func Retweet(w http.ResponseWriter, r *http.Request) {
 	`
 	var exists bool
 	var tweetText string
-	err := pg.DB.QueryRow(query, tweetID, userID).Scan(&exists, &tweetText)
+	err := s.DB.QueryRow(query, tweetID, userID).Scan(&exists, &tweetText)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -115,7 +116,7 @@ func Retweet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query = "INSERT INTO retweets (tweet_id, user_id, timestamp) VALUES ($1, $2, $3)"
-	_, err = pg.DB.Exec(query, tweetID, userID, time.Now())
+	_, err = s.DB.Exec(query, tweetID, userID, time.Now())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -128,7 +129,7 @@ func Retweet(w http.ResponseWriter, r *http.Request) {
 		WHERE tweet_id = $4
 		LIMIT 1
 	`
-	_, err = pg.DB.Exec(query, userID, tweetText, time.Now(), tweetID)
+	_, err = s.DB.Exec(query, userID, tweetText, time.Now(), tweetID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
