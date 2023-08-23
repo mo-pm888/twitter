@@ -1,14 +1,15 @@
 package tweets
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"Twitter_like_application/internal/services"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 type EditTweetRequest struct {
@@ -41,7 +42,7 @@ func (v *Visibility) isValid() bool {
 	return v.count() < 2
 }
 
-func EditTweet(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Edit(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
 	userID := r.Context().Value("userID").(int)
 	tweetValid := &TweetValid{
@@ -64,7 +65,7 @@ func EditTweet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	query := "SELECT user_id, public, only_followers, only_mutual_followers, only_me FROM tweets WHERE tweet_id = $1"
-	err = pg.DB.QueryRow(query, tweetID).Scan(&tweet.UserID, &tweet.Public, &tweet.OnlyFollowers, &tweet.OnlyMutualFollowers, &tweet.OnlyMe)
+	err = s.DB.QueryRow(query, tweetID).Scan(&tweet.UserID, &tweet.Public, &tweet.OnlyFollowers, &tweet.OnlyMutualFollowers, &tweet.OnlyMe)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			services.ReturnErr(w, "Tweet not found", http.StatusNotFound)
@@ -84,7 +85,7 @@ func EditTweet(w http.ResponseWriter, r *http.Request) {
 		visibility = request.Visibility
 	}
 	query = "UPDATE tweets SET text = $1, public = $2, only_followers = $3, only_mutual_followers = $4, only_me = $5 WHERE tweet_id = $6"
-	_, err = pg.DB.ExecContext(r.Context(), query, request.Text, visibility.Public, visibility.OnlyFollowers, visibility.OnlyMutualFollowers, visibility.OnlyMe, tweetID)
+	_, err = s.DB.ExecContext(r.Context(), query, request.Text, visibility.Public, visibility.OnlyFollowers, visibility.OnlyMutualFollowers, visibility.OnlyMe, tweetID)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
