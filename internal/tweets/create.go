@@ -37,10 +37,10 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = tweetValid.Validate.Struct(newTweet)
-	if !newTweet.isValid() {
-		services.ReturnErr(w, "There must be only one visibility parameter", http.StatusInternalServerError)
-		return
-	}
+	//if !newTweet.isValid() {
+	//	services.ReturnErr(w, "There must be only one visibility parameter", http.StatusInternalServerError)
+	//	return
+	//}
 
 	query := `INSERT INTO tweets (user_id, text, created_at, public, only_followers, only_mutual_followers, only_me)
 		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING tweet_id`

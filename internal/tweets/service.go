@@ -2,9 +2,10 @@ package tweets
 
 import (
 	"database/sql"
-)
+	"time"
 
 	"github.com/go-playground/validator/v10"
+)
 
 type Service struct {
 	DB *sql.DB
