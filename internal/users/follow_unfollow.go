@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"net/http"
 
-	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
+
 	"github.com/gorilla/mux"
 )
 
-func FollowUser(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Follow(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 	secondUserID := mux.Vars(r)["id"]
 
 	var exists bool
-	err := pg.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM follower WHERE follower = $1 AND following = $2 LIMIT 1)", userID, secondUserID).Scan(&exists)
+	err := s.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM follower WHERE follower = $1 AND following = $2 LIMIT 1)", userID, secondUserID).Scan(&exists)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -24,7 +24,7 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 		return
 	} else {
 
-		_, err = pg.DB.Exec("INSERT INTO follower (follower, following) VALUES ($1, $2)", userID, secondUserID)
+		_, err = s.DB.Exec("INSERT INTO follower (follower, following) VALUES ($1, $2)", userID, secondUserID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -34,11 +34,11 @@ func FollowUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UnfollowUser(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Unfollow(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
 	secondUserID := mux.Vars(r)["id"]
 
-	_, err := pg.DB.Exec("DELETE FROM follower WHERE follower = $1 AND following = $2", userID, secondUserID)
+	_, err := s.DB.Exec("DELETE FROM follower WHERE follower = $1 AND following = $2", userID, secondUserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

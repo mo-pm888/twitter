@@ -1,20 +1,21 @@
 package tweets
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"database/sql"
-	"github.com/gorilla/mux"
 	"net/http"
+
+	"Twitter_like_application/internal/services"
+
+	"github.com/gorilla/mux"
 )
 
-func DeleteTweet(w http.ResponseWriter, r *http.Request) {
+func (s *Service) DeleteTweet(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["tweet_id"]
 	userID := r.Context().Value("userID").(int)
 
 	deleteQuery := "DELETE FROM tweets WHERE tweet_id = $1 AND user_id = $2 RETURNING true"
 	var exists bool
-	err := pg.DB.QueryRow(deleteQuery, tweetID, userID).Scan(&exists)
+	err := s.DB.QueryRow(deleteQuery, tweetID, userID).Scan(&exists)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			services.ReturnErr(w, "Tweet not found", http.StatusNotFound)

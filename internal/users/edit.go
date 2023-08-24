@@ -1,15 +1,17 @@
 package users
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
+	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"golang.org/x/crypto/bcrypt"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"Twitter_like_application/internal/services"
+
+	"github.com/go-playground/validator/v10"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type EditUserRequest struct {
@@ -23,7 +25,7 @@ type EditUserRequest struct {
 	Location  string `json:"location" validate:"omitempty,checkLocation"`
 }
 
-func EditProfile(w http.ResponseWriter, r *http.Request) {
+func (s *Service) EditProfile(w http.ResponseWriter, r *http.Request) {
 	userValid := &UserValid{
 		validate: validator.New(),
 		validErr: make(map[string]string),
@@ -39,7 +41,7 @@ func EditProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userID := r.Context().Value("userID").(int)
-	err = updateProfile(&updatedProfile, userID, userValid)
+	err = updateProfile(&updatedProfile, userID, userValid, s.DB)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -49,7 +51,7 @@ func EditProfile(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusOK, message)
 }
 
-func updateProfile(updatedProfile *EditUserRequest, userID int, v *UserValid) error {
+func updateProfile(updatedProfile *EditUserRequest, userID int, v *UserValid, s *sql.DB) error {
 	var (
 		hashedPassword []byte
 		keys           = []string{}
@@ -98,7 +100,7 @@ func updateProfile(updatedProfile *EditUserRequest, userID int, v *UserValid) er
 	values = append(values, userID)
 	keyString := strings.Join(keys, ", ")
 	query := fmt.Sprintf("UPDATE users_tweeter SET %s WHERE id = $%d", keyString, len(values))
-	_, err = pg.DB.Exec(query, values...)
+	_, err = s.Exec(query, values...)
 	if err != nil {
 		return err
 	}

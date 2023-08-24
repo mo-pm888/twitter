@@ -109,6 +109,18 @@ var items = []darwin.Migration{
 		Script: `ALTER TABLE user_session RENAME COLUMN login_token TO session_id
 		`,
 	},
+	{
+		Version:     12,
+		Description: `add column`,
+		Script: `alter table users_tweeter add block bool default false not null;
+		`,
+	},
+	{
+		Version:     14,
+		Description: `add column`,
+		Script: `alter table users_tweeter add admin bool default false not null;
+		`,
+	},
 }
 
 func Run(db *sql.DB) error {

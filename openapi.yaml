@@ -291,6 +291,21 @@ paths:
       security:
         - apiKey: [ ]
       summary: Home
+      parameters:
+        - name: page
+          in: query
+          description: Page number
+          required: true
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: Items per page
+          required: true
+          schema:
+            type: integer
+            default: 10
       responses:
         '200':
           description: List of tweets
@@ -303,7 +318,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  v1/tweets/{id_tweet}/like:
+  /v1/tweets/{id_tweet}/like:
     post:
       tags:
         - Tweets
@@ -328,7 +343,7 @@ paths:
           description: Bad request
         '500':
           description: Internal server error
-  v1/tweets/{id_tweet}/unlike:
+  /v1/tweets/{id_tweet}/unlike:
     delete:
       tags:
         - Tweets
@@ -457,7 +472,130 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
-
+  /v1/users/{id_user}/followers:
+    get:
+      tags:
+        - Users
+      summary: Get all followers
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Get all of user followers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseList'
+        '500':
+          description: Internal Server Error
+  /v1/users/{id_user}/followings:
+    get:
+      tags:
+        - Users
+      summary: Get all followings
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Get all of user following
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponseList'
+        '500':
+          description: Internal Server Error
+  /v1/users/{id_user}/block:
+    patch:
+      tags:
+        - Admin
+      summary: Block user
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id_user
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Block user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: Internal Server Error
+  /v1/users/{id_user}/unblock:
+    patch:
+      tags:
+        - Admin
+      summary: Unblock user
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id_user
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Unblock user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '500':
+          description: Internal Server Error
+  /v1/users/get_unblock:
+    get:
+      tags:
+        - Admin
+      summary: Get unblock user
+      security:
+        - apiKey: [ ]
+      responses:
+        '200':
+          description: Unblock user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUsersResponse'
+        '500':
+          description: Internal Server Error
+  /v1/users/get_block:
+    get:
+      tags:
+        - Admin
+      summary: Get block user
+      security:
+        - apiKey: [ ]
+      responses:
+        '200':
+          description: GetBlock user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUsersResponse'
+        '500':
+          description: Internal Server Error
 components:
   schemas:
     User:
@@ -533,6 +671,13 @@ components:
         subscription:
           type: integer
 
+    GetCountsUsersAndTweets:
+      type: object
+      properties:
+        countUsers:
+          type: integer
+        countTweets:
+          type: integer
 
     UpdateUserProfile:
       type: object
@@ -641,6 +786,11 @@ components:
         location:
           type: string
           format: string
+    SuccessResponseList:
+      type: object
+      properties:
+        status:
+          type: integer
     SuccessResponse:
       type: object
       properties:
@@ -648,6 +798,15 @@ components:
           type: string
         message:
           type: string
+    GetUsersResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          username:
+            type: string
   securitySchemes:
     apiKey:
       type: apiKey
