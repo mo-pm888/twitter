@@ -298,12 +298,14 @@ paths:
           required: true
           schema:
             type: integer
+            default: 1
         - name: per_page
           in: query
           description: Items per page
           required: true
           schema:
             type: integer
+            default: 10
       responses:
         '200':
           description: List of tweets

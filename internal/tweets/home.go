@@ -1,18 +1,19 @@
 package tweets
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
-	"encoding/json"
-	"github.com/lib/pq"
 	"log"
 	"net/http"
+	"strconv"
+
+	"Twitter_like_application/internal/database/pg"
+	"Twitter_like_application/internal/services"
+
+	"github.com/lib/pq"
 )
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	perPageStr := r.URL.Query().Get("per_page")
-
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
 		services.ReturnErr(w, "Invalid page parameter", http.StatusBadRequest)
@@ -25,8 +26,18 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if page >= 100 || perPage >= 100 {
+		services.ReturnErr(w, "Invalid page data", http.StatusBadRequest)
+		return
+	}
+
 	userID := r.Context().Value("userID").(string)
 	userIDint, err := strconv.Atoi(userID)
+	if err != nil {
+		services.ReturnErr(w, "Invalid user ID", http.StatusInternalServerError)
+		return
+	}
+
 	offset := (page - 1) * perPage
 	limit := perPage
 
@@ -36,12 +47,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer func(rows *sql.Rows) {
-		err = rows.Close()
-		if err != nil {
-
-		}
-	}(rows)
+	defer rows.Close()
 
 	var followingIDs []int
 	for rows.Next() {
@@ -55,8 +61,8 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tweetsQuery := `
-	SELECT tweet_id, text, user_id, created_at,parent_tweet_id,public,
-	only_followers,only_mutual_followers,only_me,retweet
+	SELECT tweet_id, text, user_id, created_at, parent_tweet_id, public,
+	only_followers, only_mutual_followers, only_me, retweet
 	FROM tweets
 	WHERE user_id = ANY($1)
 	ORDER BY created_at DESC
@@ -68,12 +74,8 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer func(rows *sql.Rows) {
-		err = rows.Close()
-		if err != nil {
+	defer rows.Close()
 
-		}
-	}(rows)
 	var tweets []Tweet
 	for rows.Next() {
 		var tweet Tweet
@@ -87,6 +89,5 @@ func Home(w http.ResponseWriter, r *http.Request) {
 		tweets = append(tweets, tweet)
 	}
 
-	w.WriteHeader(http.StatusOK)
 	services.ReturnJSON(w, http.StatusOK, tweets)
 }
