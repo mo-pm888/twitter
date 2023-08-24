@@ -234,7 +234,7 @@ paths:
         '500':
           description: Internal Server Error
 
-  /v1/tweets/craete:
+  /v1/tweets/create:
     post:
       tags:
         - Tweets

@@ -16,6 +16,7 @@ import (
 const (
 	migrationGoodMsg = "migrations start"
 	configBadMsg     = "reading config is mistake "
+	settingsGoodMsg  = "settings read and applied "
 )
 
 func Run() error {
@@ -36,8 +37,21 @@ func Run() error {
 	} else {
 		fmt.Println(migrationGoodMsg)
 	}
+	if err = ReadSettings(a); err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(settingsGoodMsg)
 	if err = server.Server(*c, *u, *t, *a); err != nil {
 		return err
 	}
+	return nil
+}
+
+func ReadSettings(s *admin.Service) error {
+	tweetSetting, err := s.GetSettings("tweet")
+	if err != nil {
+		return err
+	}
+	s.TweetLength = tweetSetting.TweetLength
 	return nil
 }

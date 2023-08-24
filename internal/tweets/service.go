@@ -2,13 +2,18 @@ package tweets
 
 import (
 	"database/sql"
-)
+	"time"
+
+	"Twitter_like_application/internal/admin"
 
 	"github.com/go-playground/validator/v10"
+)
 
 type Service struct {
 	DB *sql.DB
+	admin.Settings
 }
+
 type Tweet struct {
 	TweetID       int       `json:"tweet_id"`
 	UserID        int       `json:"user_id"`

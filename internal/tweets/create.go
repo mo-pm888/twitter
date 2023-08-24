@@ -26,10 +26,10 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		Validate: validator.New(),
 		ValidErr: make(map[string]string),
 	}
-	if err := RegisterTweetValidations(tweetValid); err != nil {
+	if err := RegisterTweetValidations(tweetValid, s); err != nil {
 		fmt.Println(err)
 	}
-	userID := r.Context().Value("userID").(int)
+	userID := r.Context().Value("userID").(string)
 	var newTweet CreatNewTweet
 	err := json.NewDecoder(r.Body).Decode(&newTweet)
 	if err != nil {
