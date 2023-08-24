@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -11,11 +12,9 @@ import (
 	"net/url"
 	"strings"
 
-	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gorilla/mux"
 )
 
 const (
@@ -42,7 +41,7 @@ func (v *UserValid) Error() string {
 	return strings.Join(pairs, "; ")
 }
 
-func checkAuth(w http.ResponseWriter, r *http.Request) *http.Request {
+func checkAuth(w http.ResponseWriter, r *http.Request, s *sql.DB) *http.Request {
 	apikey := r.Header.Get("X-API-KEY")
 	cookie, err := r.Cookie("session")
 	if apikey == "" && (err != nil || cookie == nil) {
@@ -63,7 +62,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request) *http.Request {
 
 	var userID string
 	var isAdmin bool
-	err = pg.DB.QueryRow(query, sessionID).Scan(&userID, &isAdmin)
+	err = s.QueryRow(query, sessionID).Scan(&userID, &isAdmin)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return nil
@@ -73,9 +72,9 @@ func checkAuth(w http.ResponseWriter, r *http.Request) *http.Request {
 	return r.WithContext(ctx)
 }
 
-func AuthHandler(next http.Handler) http.Handler {
+func (s *Service) AuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r = checkAuth(w, r)
+		r = checkAuth(w, r, s.DB)
 		if v, ok := r.Context().Value(ctxKeyUserID).(string); ok && v != "" {
 			next.ServeHTTP(w, r)
 		} else {
@@ -85,9 +84,9 @@ func AuthHandler(next http.Handler) http.Handler {
 	})
 }
 
-func AdminAuthHandler(next http.Handler) http.Handler {
+func (s *Service) AdminAuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		r = checkAuth(w, r)
+		r = checkAuth(w, r, s.DB)
 		if v, ok := r.Context().Value(ctxKeyIsAdmin).(bool); ok && v {
 			next.ServeHTTP(w, r)
 		} else {
@@ -96,7 +95,7 @@ func AdminAuthHandler(next http.Handler) http.Handler {
 	})
 }
 
-func ResetPassword(w http.ResponseWriter, r *http.Request) {
+func (s *Service) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(string)
 
 	var userResPass User
@@ -107,7 +106,7 @@ func ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 	query := "SELECT name, email  FROM users_tweeter WHERE id = $1"
 	var user User
-	err = pg.DB.QueryRow(query, userID).Scan(&user.Name, &user.Email)
+	err = s.DB.QueryRow(query, userID).Scan(&user.Name, &user.Email)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -142,79 +141,80 @@ func ResetPasswordPlusEmail(user *User) {
 	}
 	return
 }
-func GetFollowers(w http.ResponseWriter, r *http.Request) {
-	userID := r.FormValue("user_id")
-	if userID == "" {
-		http.Error(w, "Missing user ID", http.StatusBadRequest)
-		return
-	}
 
-	query := "SELECT u.id, u.username FROM users u INNER JOIN subscriptions s ON u.id = s.follower_id WHERE s.followee_id = $1"
-	rows, err := pg.DB.Query(query, userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
+//func GetFollowers(w http.ResponseWriter, r *http.Request) {
+//	userID := r.FormValue("user_id")
+//	if userID == "" {
+//		http.Error(w, "Missing user ID", http.StatusBadRequest)
+//		return
+//	}
+//
+//	query := "SELECT u.id, u.username FROM users u INNER JOIN subscriptions s ON u.id = s.follower_id WHERE s.followee_id = $1"
+//	rows, err := pg.DB.Query(query, userID)
+//	if err != nil {
+//		http.Error(w, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//	defer rows.Close()
+//
+//	var followers []User
+//
+//	for rows.Next() {
+//		var follower User
+//		err := rows.Scan(&follower.UserID, &follower.Name)
+//		if err != nil {
+//			http.Error(w, err.Error(), http.StatusInternalServerError)
+//			return
+//		}
+//		followers = append(followers, follower)
+//	}
+//
+//	if err := rows.Err(); err != nil {
+//		http.Error(w, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//
+//	w.Header().Set("Content-Type", "application/json")
+//	json.NewEncoder(w).Encode(followers)
+//}
 
-	var followers []User
+//func GetFollowing(w http.ResponseWriter, r *http.Request) {
+//	userID := r.FormValue("user_id")
+//	if userID == "" {
+//		http.Error(w, "Missing user ID", http.StatusBadRequest)
+//		return
+//	}
+//
+//	query := "SELECT u.id, u.username FROM users u INNER JOIN subscriptions s ON u.id = s.followee_id WHERE s.follower_id = $1"
+//	rows, err := pg.DB.Query(query, userID)
+//	if err != nil {
+//		http.Error(w, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//	defer rows.Close()
+//
+//	var following []User
+//
+//	for rows.Next() {
+//		var followee User
+//		err := rows.Scan(&followee.UserID, &followee.Name)
+//		if err != nil {
+//			http.Error(w, err.Error(), http.StatusInternalServerError)
+//			return
+//		}
+//		following = append(following, followee)
+//	}
+//
+//	if err := rows.Err(); err != nil {
+//		http.Error(w, err.Error(), http.StatusInternalServerError)
+//		return
+//	}
+//
+//	w.Header().Set("Content-Type", "application/json")
+//	json.NewEncoder(w).Encode(following)
+//}
 
-	for rows.Next() {
-		var follower User
-		err := rows.Scan(&follower.UserID, &follower.Name)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		followers = append(followers, follower)
-	}
-
-	if err := rows.Err(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(followers)
-}
-
-func GetFollowing(w http.ResponseWriter, r *http.Request) {
-	userID := r.FormValue("user_id")
-	if userID == "" {
-		http.Error(w, "Missing user ID", http.StatusBadRequest)
-		return
-	}
-
-	query := "SELECT u.id, u.username FROM users u INNER JOIN subscriptions s ON u.id = s.followee_id WHERE s.follower_id = $1"
-	rows, err := pg.DB.Query(query, userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	var following []User
-
-	for rows.Next() {
-		var followee User
-		err := rows.Scan(&followee.UserID, &followee.Name)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		following = append(following, followee)
-	}
-
-	if err := rows.Err(); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(following)
-}
-
-func SearchUsers(w http.ResponseWriter, r *http.Request) {
+func (s *Service) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	if query == "" {
 		http.Error(w, "Missing search query", http.StatusBadRequest)
@@ -224,7 +224,7 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	searchQuery := "%" + query + "%"
 	query = "SELECT id, name, username FROM users WHERE name ILIKE $1 OR username ILIKE $1"
 
-	rows, err := pg.DB.Query(query, searchQuery)
+	rows, err := s.DB.Query(query, searchQuery)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -252,30 +252,30 @@ func SearchUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-func GetStatistics(w http.ResponseWriter, r *http.Request) {
-	userCount, err := services.GetUserCount()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	tweetCount, err := services.GetTweetCount()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	statistics := struct {
-		UserCount  int `json:"user_count"`
-		TweetCount int `json:"tweet_count"`
-	}{
-		UserCount:  userCount,
-		TweetCount: tweetCount,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(statistics)
-}
+//	func GetStatistics(w http.ResponseWriter, r *http.Request) {
+//		userCount, err := services.GetUserCount()
+//		if err != nil {
+//			http.Error(w, err.Error(), http.StatusInternalServerError)
+//			return
+//		}
+//
+//		tweetCount, err := services.GetTweetCount()
+//		if err != nil {
+//			http.Error(w, err.Error(), http.StatusInternalServerError)
+//			return
+//		}
+//
+//		statistics := struct {
+//			UserCount  int `json:"user_count"`
+//			TweetCount int `json:"tweet_count"`
+//		}{
+//			UserCount:  userCount,
+//			TweetCount: tweetCount,
+//		}
+//
+//		w.Header().Set("Content-Type", "application/json")
+//		json.NewEncoder(w).Encode(statistics)
+//	}
 func CheckEmail(newUser *User) string {
 	token := make([]byte, 32)
 	_, err := rand.Read(token)
@@ -306,40 +306,40 @@ func CheckEmail(newUser *User) string {
 	return confirmToken
 }
 
-func GetUserProfile(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	userID := vars["id"]
-
-	query := "SELECT id, name, bio FROM users_tweeter WHERE id = $1"
-	var user User
-	err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Bio)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	response := struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Birthday string `json:"birthday"`
-		NickName string `json:"nickName"`
-		Bio      string `json:"bio"`
-		Location string `json:"location"`
-	}{
-		Name:     user.Name,
-		Email:    user.Email,
-		Birthday: user.BirthDate,
-		NickName: user.Nickname,
-		Bio:      user.Bio,
-		Location: user.Location,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
-func DeleteUserSession(token string) error {
+//	func GetUserProfile(w http.ResponseWriter, r *http.Request) {
+//		vars := mux.Vars(r)
+//		userID := vars["id"]
+//
+//		query := "SELECT id, name, bio FROM users_tweeter WHERE id = $1"
+//		var user User
+//		err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Bio)
+//		if err != nil {
+//			http.Error(w, err.Error(), http.StatusInternalServerError)
+//			return
+//		}
+//
+//		response := struct {
+//			Name     string `json:"name"`
+//			Email    string `json:"email"`
+//			Birthday string `json:"birthday"`
+//			NickName string `json:"nickName"`
+//			Bio      string `json:"bio"`
+//			Location string `json:"location"`
+//		}{
+//			Name:     user.Name,
+//			Email:    user.Email,
+//			Birthday: user.BirthDate,
+//			NickName: user.Nickname,
+//			Bio:      user.Bio,
+//			Location: user.Location,
+//		}
+//
+//		w.Header().Set("Content-Type", "application/json")
+//		json.NewEncoder(w).Encode(response)
+//	}
+func DeleteUserSession(token string, s *sql.DB) error {
 	query := "DELETE FROM user_session WHERE login_token = $1"
-	_, err := pg.DB.Exec(query, token)
+	_, err := s.Exec(query, token)
 	if err != nil {
 		return err
 	}

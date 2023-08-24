@@ -5,13 +5,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
 
 	"github.com/lib/pq"
 )
 
-func Home(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Home(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	perPageStr := r.URL.Query().Get("per_page")
 	page, err := strconv.Atoi(pageStr)
@@ -40,9 +39,8 @@ func Home(w http.ResponseWriter, r *http.Request) {
 
 	offset := (page - 1) * perPage
 	limit := perPage
-
 	followingQuery := "SELECT following FROM follower WHERE follower = $1"
-	rows, err := pg.DB.Query(followingQuery, userIDint)
+	rows, err := s.DB.Query(followingQuery, userIDint)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -69,7 +67,7 @@ func Home(w http.ResponseWriter, r *http.Request) {
 	LIMIT $2 OFFSET $3
 `
 	followingArray := pq.Array(followingIDs)
-	rows, err = pg.DB.Query(tweetsQuery, followingArray, limit, offset)
+	rows, err = s.DB.Query(tweetsQuery, followingArray, limit, offset)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return

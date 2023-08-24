@@ -1,11 +1,14 @@
 package tweets
 
 import (
-	"time"
-
-	"github.com/go-playground/validator/v10"
+	"database/sql"
 )
 
+	"github.com/go-playground/validator/v10"
+
+type Service struct {
+	DB *sql.DB
+}
 type Tweet struct {
 	TweetID       int       `json:"tweet_id"`
 	UserID        int       `json:"user_id"`
@@ -16,20 +19,11 @@ type Tweet struct {
 	ParentTweetId int       `json:"parent_tweet_id"`
 	Visibility
 }
-type CreatNewTweet struct {
-	TweetID             int
-	Text                string `json:"text" validate:"required,checkTweetText"`
-	CreatedAt           time.Time
-	Public              bool `json:"public"`
-	OnlyFollowers       bool `json:"only_followers"`
-	OnlyMutualFollowers bool `json:"only_mutual_followers"`
-	OnlyMe              bool `json:"only_me"`
-}
-
 type TweetValid struct {
 	Validate *validator.Validate
 	ValidErr map[string]string
 }
-type ReplayTweet struct {
-	Tweet
+
+func New(db *sql.DB) *Service {
+	return &Service{DB: db}
 }

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
 
 	"github.com/gorilla/mux"
@@ -22,9 +21,9 @@ type messageRequest struct {
 	Text   string `json:"message"`
 }
 
-func BlockUser(w http.ResponseWriter, r *http.Request) {
+func (s *Service) BlockUser(w http.ResponseWriter, r *http.Request) {
 	userID := mux.Vars(r)["id_user"]
-	err := UpdateUserBlockStatus(r.Context(), true, userID)
+	err := UpdateUserBlockStatus(r.Context(), true, userID, s.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -35,9 +34,9 @@ func BlockUser(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusOK, message)
 }
 
-func UnblockUser(w http.ResponseWriter, r *http.Request) {
+func (s *Service) UnblockUser(w http.ResponseWriter, r *http.Request) {
 	userID := mux.Vars(r)["id_user"]
-	err := UpdateUserBlockStatus(r.Context(), false, userID)
+	err := UpdateUserBlockStatus(r.Context(), false, userID, s.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -48,8 +47,8 @@ func UnblockUser(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusOK, message)
 }
 
-func GetAllBlockUsers(w http.ResponseWriter, r *http.Request) {
-	userList, err := GetAllUsers(r.Context(), true)
+func (s *Service) GetAllBlockUsers(w http.ResponseWriter, r *http.Request) {
+	userList, err := GetAllUsers(r.Context(), true, s.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -57,8 +56,8 @@ func GetAllBlockUsers(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusOK, userList)
 }
 
-func GetAllUnblockUsers(w http.ResponseWriter, r *http.Request) {
-	userList, err := GetAllUsers(r.Context(), false)
+func (s *Service) GetAllUnblockUsers(w http.ResponseWriter, r *http.Request) {
+	userList, err := GetAllUsers(r.Context(), false, s.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -66,20 +65,20 @@ func GetAllUnblockUsers(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusOK, userList)
 }
 
-func UpdateUserBlockStatus(ctx context.Context, status bool, userID string) error {
+func UpdateUserBlockStatus(ctx context.Context, status bool, userID string, s *sql.DB) error {
 	query := "UPDATE users_tweeter SET block = $1 WHERE id = $2"
-	_, err := pg.DB.ExecContext(ctx, query, status, userID)
+	_, err := s.ExecContext(ctx, query, status, userID)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetAllUsers(ctx context.Context, block bool) ([]UsersList, error) {
+func GetAllUsers(ctx context.Context, block bool, s *sql.DB) ([]UsersList, error) {
 	var usersList []UsersList
 
 	query := "SELECT id,name FROM users_tweeter WHERE block = $1"
-	rows, err := pg.DB.QueryContext(ctx, query, block)
+	rows, err := s.QueryContext(ctx, query, block)
 	if err != nil {
 		return nil, err
 	}
