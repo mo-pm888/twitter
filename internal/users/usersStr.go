@@ -15,13 +15,6 @@ type User struct {
 	Bio                string `json:"bio" validate:"omitempty"`
 	Location           string `json:"location" validate:"omitempty"`
 	Tweets.Tweet
-	BirthDate string `json:"birthdate"`
-	Nickname  string `json:"nickname"`
-	Bio       string `json:"bio"`
-	Location  string `json:"location"`
-	Tweet
-	Following []int
-	Followers []int
 }
 type GetCurrentUser struct {
 	Name      string `json:"name"`
@@ -41,26 +34,6 @@ type ReplaceMyData struct {
 	NewNickname  string `json:"new_nickname"`
 	NewBio       string `json:"new_bio"`
 	NewLocation  string `json:"new_location"`
-}
-
-type Tweet struct {
-	TweetID             int       `json:"tweet_id"`
-	UserID              int       `json:"user_id"`
-	Author              string    `json:"author"`
-	Text                string    `json:"text"`
-	CreatedAt           time.Time `json:"created_at"`
-	LikeCount           int       `json:"like_count"`
-	Retweet             int       `json:"repost"`
-	Public              bool      `json:"public"`
-	OnlyFollowers       bool      `json:"only_followers"`
-	OnlyMutualFollowers bool      `json:"only_mutual_followers"`
-	OnlyMe              bool      `json:"only_me"`
-	LoginToken          string
-	ParentTweetId       int `json:"parent_tweet_id"`
-}
-
-type ReplayTweet struct {
-	Tweets.Tweet
 }
 
 type DeleteUserST struct {
