@@ -104,6 +104,12 @@ var items = []darwin.Migration{
 		`,
 	},
 	{
+		Version:     11,
+		Description: `rename column`,
+		Script: `ALTER TABLE user_session RENAME COLUMN login_token TO session_id
+		`,
+	},
+	{
 		Version:     13,
 		Description: `add column`,
 		Script: `alter table tweets add block bool default false not null;

@@ -2,7 +2,7 @@ package users
 
 import Tweets "Twitter_like_application/internal/tweets"
 
-type Users struct {
+type User struct {
 	ID                 int
 	Name               string `json:"name" validate:"omitempty"`
 	Password           string `json:"password" validate:"omitempty"`
@@ -23,7 +23,6 @@ type Users struct {
 	Following []int
 	Followers []int
 }
-
 type GetCurrentUser struct {
 	Name      string `json:"name"`
 	BirthDate string `json:"birthdate"`
@@ -75,7 +74,7 @@ type ResetPasswordUser struct {
 type FollowingForUser struct {
 	Writer     int `json:"writer"`
 	Subscriber int `json:"subscriber"`
-	Users
+	User
 }
 
 type UsersLogin struct {

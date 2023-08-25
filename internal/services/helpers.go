@@ -2,6 +2,10 @@ package services
 
 import (
 	Postgresql "Twitter_like_application/internal/database/pg"
+	"regexp"
+
+	//Serviceuser "Twitter_like_application/internal/users"
+
 	"bufio"
 	"crypto/rand"
 	"encoding/hex"
@@ -15,6 +19,11 @@ import (
 type ErrResponse struct {
 	Errtext string `json:"errtext"`
 }
+
+var (
+	emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	emailLen   = 320
+)
 
 func GenerateResetToken() string {
 	const resetTokenLength = 32
@@ -132,9 +141,29 @@ func ReturnErr(w http.ResponseWriter, err string, code int) {
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errj)
 }
+func CheckEmail(w http.ResponseWriter, email string) {
+	if !emailRegex.MatchString(email) {
+		ReturnErr(w, "Invalid email format", http.StatusBadRequest)
+		return
+	}
+	if len(email) > 320 {
+		ReturnErr(w, "Name exceeds maximum length", http.StatusBadRequest)
+		return
+	}
+}
+func CheckPassword(w http.ResponseWriter, password string) {
+	passwordRegex := regexp.MustCompile(`^[a-zA-Z]+$`)
+	if !passwordRegex.MatchString(password) {
+		ReturnErr(w, "Invalid password format", http.StatusBadRequest)
+		return
+	}
+	if len(password) > 100 {
+		ReturnErr(w, "Password exceeds maximum length", http.StatusBadRequest)
+		return
+	}
+}
 func ReturnJSON(w http.ResponseWriter, statusCode int, message string) {
 	response := map[string]interface{}{
-		"status":  "success",
 		"message": message,
 	}
 
