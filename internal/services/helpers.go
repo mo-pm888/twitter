@@ -2,8 +2,6 @@ package services
 
 import (
 	Postgresql "Twitter_like_application/internal/database/pg"
-	//Serviceuser "Twitter_like_application/internal/users"
-
 	"bufio"
 	"crypto/rand"
 	"encoding/hex"
