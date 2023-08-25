@@ -281,11 +281,13 @@ paths:
       summary: Home
       responses:
         '200':
-          description: Tweet details
+          description: List of tweets
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Home'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tweet'
         '500':
           description: Internal Server Error
 

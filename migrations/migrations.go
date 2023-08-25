@@ -98,14 +98,18 @@ var items = []darwin.Migration{
 		`,
 	},
 	{
+		Version:     10,
+		Description: `rename column`,
+		Script: `ALTER TABLE follower RENAME COLUMN followers TO follower
+		`,
+	},
+	{
 		Version:     13,
 		Description: `add column`,
 		Script: `alter table tweets add block bool default false not null;
 		`,
 	},
 }
-}
-
 
 func Run(db *sql.DB) error {
 	return darwin.New(darwin.NewGenericDriver(db, darwin.PostgresDialect{}), items, nil).Migrate()

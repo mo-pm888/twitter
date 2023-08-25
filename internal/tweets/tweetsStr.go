@@ -13,7 +13,6 @@ type Tweet struct {
 	CreatedAt     time.Time `json:"created_at"`
 	LikeCount     int       `json:"like_count"`
 	Retweet       int       `json:"repost"`
-	LoginToken    string    `json:"-"`
 	ParentTweetId int       `json:"parent_tweet_id"`
 	Visibility
 }
