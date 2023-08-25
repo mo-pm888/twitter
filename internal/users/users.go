@@ -76,11 +76,15 @@ func (s *Service) AuthHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r = checkAuth(w, r, s.DB)
 		if v, ok := r.Context().Value(ctxKeyUserID).(string); ok && v != "" {
-			next.ServeHTTP(w, r)
+			isAdmin := r.Context().Value(ctxKeyIsAdmin).(bool)
+			if isAdmin {
+				next.ServeHTTP(w, r)
+			} else {
+				services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
+			}
 		} else {
 			services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
 		}
-
 	})
 }
 

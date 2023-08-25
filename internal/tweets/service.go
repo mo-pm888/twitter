@@ -1,6 +1,9 @@
 package tweets
 
 import (
+	"database/sql"
+	"time"
+
 	"github.com/go-playground/validator/v10"
 )
 

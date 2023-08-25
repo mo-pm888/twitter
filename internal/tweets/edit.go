@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"Twitter_like_application/internal/services"
 
@@ -74,7 +75,11 @@ func (s *Service) Edit(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	if tweet.UserID != userID {
+	id, err := strconv.Atoi(userID)
+	if err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+	}
+	if tweet.UserID != id {
 		http.Error(w, "it isn't your tweet", http.StatusUnauthorized)
 		return
 	}

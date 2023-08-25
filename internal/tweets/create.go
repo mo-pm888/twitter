@@ -1,9 +1,12 @@
 package tweets
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"Twitter_like_application/internal/services"
@@ -19,9 +22,23 @@ type CreatNewTweet struct {
 	OnlyFollowers       bool `json:"only_followers"`
 	OnlyMutualFollowers bool `json:"only_mutual_followers"`
 	OnlyMe              bool `json:"only_me"`
+	Visibility
 }
 
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
+	var newTweet CreatNewTweet
+	err := json.NewDecoder(r.Body).Decode(&newTweet)
+	if err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = s.CreateNewTweet(&newTweet, r.Context(), 0); err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+	}
+	services.ReturnJSON(w, http.StatusCreated, newTweet)
+}
+
+func (s *Service) CreateNewTweet(tweet *CreatNewTweet, ctx context.Context, parentID int) error {
 	tweetValid := &TweetValid{
 		Validate: validator.New(),
 		ValidErr: make(map[string]string),
@@ -29,38 +46,23 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 	if err := RegisterTweetValidations(tweetValid); err != nil {
 		fmt.Println(err)
 	}
-	userID := r.Context().Value("userID").(int)
-	var newTweet CreatNewTweet
-	err := json.NewDecoder(r.Body).Decode(&newTweet)
-	if err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
-		return
+	if err := tweetValid.Validate.Struct(tweet); err != nil {
+		return err
 	}
-	err = tweetValid.Validate.Struct(newTweet)
-	//if !newTweet.isValid() {
-	//	services.ReturnErr(w, "There must be only one visibility parameter", http.StatusInternalServerError)
-	//	return
-	//}
-
-	query := `INSERT INTO tweets (user_id, text, created_at, public, only_followers, only_mutual_followers, only_me)
-		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING tweet_id`
-	err = s.DB.QueryRowContext(r.Context(), query, userID, newTweet.Text, time.Now(), newTweet.Public, newTweet.OnlyFollowers, newTweet.OnlyMutualFollowers, newTweet.OnlyMe).Scan(&newTweet.TweetID)
-	err = tweetValid.Validate.Struct(newTweet)
-	//if !newTweet.isValid() {
-	//	services.ReturnErr(w, "There must be only one visibility parameter", http.StatusInternalServerError)
-	//	return
-	//}
-
-	query := `INSERT INTO tweets (user_id, text, created_at, public, only_followers, only_mutual_followers, only_me)
-		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING tweet_id`
-	err = s.DB.QueryRowContext(r.Context(), query, userID, newTweet.Text, time.Now(), newTweet.Public, newTweet.OnlyFollowers, newTweet.OnlyMutualFollowers, newTweet.OnlyMe).Scan(&newTweet.TweetID)
+	userID := ctx.Value("userID").(string)
+	id, err := strconv.Atoi(userID)
 	if err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
-
+		return err
 	}
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(newTweet)
+	if !tweet.isValid() {
+		return errors.New("visibility error")
+	}
+	query := `INSERT INTO tweets (user_id, text, created_at,parent_tweet_id, public, only_followers, only_mutual_followers, only_me)
+		VALUES ($1, $2, $3, $4, $5, $6, $7,$8) RETURNING tweet_id`
+	err = s.DB.QueryRowContext(ctx, query, id, tweet.Text, time.Now(), parentID, tweet.Public, tweet.OnlyFollowers, tweet.OnlyMutualFollowers, tweet.OnlyMe).Scan(&tweet.TweetID)
+	if err != nil {
+		return err
+	}
+	return nil
 
-	return
 }
