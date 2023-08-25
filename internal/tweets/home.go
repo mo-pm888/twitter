@@ -11,25 +11,25 @@ import (
 
 func Home(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value("userID").(int)
-	followsQuery := "SELECT follower_id FROM followers_subscriptions WHERE subscription_id = $1"
-	rows, err := pg.DB.Query(followsQuery, userID)
+	followingQuery := "SELECT following FROM follower WHERE $1"
+	rows, err := pg.DB.Query(followingQuery, userID)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
 	defer rows.Close()
-	var followers []int
+	var followingID []int
 	for rows.Next() {
-		var followee int
-		if err = rows.Scan(&followee); err != nil {
-			log.Println("Error scanning followers:", err)
+		var following int
+		if err = rows.Scan(&following); err != nil {
+			log.Println("Error scanning following", err)
 			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		}
-		followers = append(followers, followee)
+		followingID = append(followingID, following)
 	}
 
-	tweetsQuery := `SELECT tweet_id, text, user_id, created_at FROM tweets WHERE user_id = ANY($1) ORDER BY created_at DESC`
-	followersArray := pq.Array(followers)
-	rows, err = pg.DB.Query(tweetsQuery, followersArray)
+	tweetsQuery := `SELECT tweet_id, text, user_id, created_at FROM tweets WHERE user_id = ANY($1) ORDER BY created_at DESC LIMIT 10`
+	followingArray := pq.Array(followingID)
+	rows, err = pg.DB.Query(tweetsQuery, followingArray)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}

@@ -80,12 +80,32 @@ var items = []darwin.Migration{
 		)`,
 	},
 	{
+		Version:     7,
+		Description: `rename table followers_subscriptions table`,
+		Script: `ALTER TABLE followers_subscriptions RENAME TO follower
+		`,
+	},
+	{
+		Version:     8,
+		Description: `rename column`,
+		Script: `ALTER TABLE follower RENAME COLUMN subscription_id TO followers
+		`,
+	},
+	{
+		Version:     9,
+		Description: `rename column`,
+		Script: `ALTER TABLE follower RENAME COLUMN follower_id TO following
+		`,
+	},
+	{
 		Version:     13,
 		Description: `add column`,
 		Script: `alter table tweets add block bool default false not null;
 		`,
 	},
 }
+}
+
 
 func Run(db *sql.DB) error {
 	return darwin.New(darwin.NewGenericDriver(db, darwin.PostgresDialect{}), items, nil).Migrate()
