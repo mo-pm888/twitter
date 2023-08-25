@@ -1,13 +1,23 @@
 package users
 
 import (
-	"Twitter_like_application/internal/database/pg"
-	"Twitter_like_application/internal/services"
 	"encoding/json"
 	"net/http"
+
+	"Twitter_like_application/internal/services"
 )
 
-func GetCurrentProfile(w http.ResponseWriter, r *http.Request) {
+type GetCurrentUser struct {
+	Name      string `json:"name"`
+	BirthDate string `json:"birthdate"`
+	Nickname  string `json:"nickname"`
+	Bio       string `json:"bio"`
+	Location  string `json:"location"`
+	Following int    `json:"following"`
+	Followers int    `json:"followers"`
+}
+
+func (s *Service) GetCurrentProfile(w http.ResponseWriter, r *http.Request) {
 	var (
 		followerCount     int
 		subscriptionCount int
@@ -31,7 +41,7 @@ func GetCurrentProfile(w http.ResponseWriter, r *http.Request) {
 		u.id, u.name, u.birthdate, u.bio, u.location, u.nickname
 `
 	var user GetCurrentUser
-	err := pg.DB.QueryRow(query, userID).Scan(
+	err := s.DB.QueryRow(query, userID).Scan(
 		&user.Name, &user.BirthDate, &user.Bio, &user.Location, &user.Nickname,
 		&subscriptionCount, &followerCount,
 	)
