@@ -21,7 +21,7 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service)
 	r.Use(CorsMiddleware)
 	r.HandleFunc("/v1/users/create", s.Create).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/login", s.LogIn).Methods(http.MethodPost)
-	r.HandleFunc("/v1/tweets/explore", Tweets.ExploreRandom).Methods(http.MethodGet)
+	r.HandleFunc("/v1/tweets/explore", t.ExploreRandom).Methods(http.MethodGet)
 	//http.Handle("/v1/users/logout", users.AuthHandler(http.HandlerFunc(s.LogOut)))
 	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
 		s.AuthHandler(http.HandlerFunc(s.GetCurrentProfile)).ServeHTTP(w, r)

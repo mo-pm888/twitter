@@ -6,11 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
 )
 
-func ExploreRandom(w http.ResponseWriter, r *http.Request) {
+func (s *Service) ExploreRandom(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	perPageStr := r.URL.Query().Get("per_page")
 
@@ -26,10 +25,12 @@ func ExploreRandom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	offset := (page - 1) * perPage
-	limit := perPage
+	if page < 100 && perPage < 100 {
 
-	tweetsQuery := `
+		offset := (page - 1) * perPage
+		limit := perPage
+
+		tweetsQuery := `
 		SELECT tweet_id, text, user_id, created_at, parent_tweet_id, public,
 		only_followers, only_mutual_followers, only_me, retweet
 		FROM tweets
@@ -37,31 +38,34 @@ func ExploreRandom(w http.ResponseWriter, r *http.Request) {
 		LIMIT $1 OFFSET $2
 	`
 
-	rows, err := pg.DB.Query(tweetsQuery, limit, offset)
-	if err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer func(rows *sql.Rows) {
-		err = rows.Close()
+		rows, err := s.DB.Query(tweetsQuery, limit, offset)
 		if err != nil {
-
-		}
-	}(rows)
-
-	var tweets []Tweet
-	for rows.Next() {
-		var tweet Tweet
-		if err = rows.Scan(&tweet.TweetID, &tweet.Text, &tweet.UserID, &tweet.CreatedAt,
-			&tweet.ParentTweetId, &tweet.Public, &tweet.OnlyFollowers,
-			&tweet.OnlyMutualFollowers, &tweet.OnlyMe, &tweet.Retweet); err != nil {
-			log.Println("Error scanning tweets:", err)
 			services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tweets = append(tweets, tweet)
+		defer func(rows *sql.Rows) {
+			err = rows.Close()
+			if err != nil {
+
+			}
+		}(rows)
+
+		var tweets []Tweet
+		for rows.Next() {
+			var tweet Tweet
+			if err = rows.Scan(&tweet.TweetID, &tweet.Text, &tweet.UserID, &tweet.CreatedAt,
+				&tweet.ParentTweetId, &tweet.Public, &tweet.OnlyFollowers,
+				&tweet.OnlyMutualFollowers, &tweet.OnlyMe, &tweet.Retweet); err != nil {
+				log.Println("Error scanning tweets:", err)
+				services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			tweets = append(tweets, tweet)
+		}
+		w.WriteHeader(http.StatusOK)
+		services.ReturnJSON(w, http.StatusOK, tweets)
+	} else {
+		services.ReturnErr(w, "uncorrected page's number", http.StatusBadRequest)
 	}
 
-	w.WriteHeader(http.StatusOK)
-	services.ReturnJSON(w, http.StatusOK, tweets)
 }
