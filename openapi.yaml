@@ -379,7 +379,7 @@ paths:
   /v1/tweets/{id_tweet}/unblock:
     patch:
       tags:
-        - Admin
+        - Admins
       summary: Unblock tweet
       security:
         - apiKey: [ ]
@@ -396,13 +396,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BlockTweetResponse'
+                $ref: '#/components/schemas/SuccessResponse'
         '500':
           description: Internal Server Error
   /v1/tweets/{id_tweet}/block:
       patch:
         tags:
-          - Admin
+          - Admins
         summary: Block tweet
         security:
           - apiKey: [ ]
@@ -419,7 +419,7 @@ paths:
             content:
               application/json:
                 schema:
-                  $ref: '#/components/schemas/BlockTweetResponse'
+                  $ref: '#/components/schemas/SuccessResponse'
           '500':
             description: Internal Server Error
 
@@ -504,128 +504,20 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
-  /v1/users/{id_user}/followers:
+  /v1/admin/stats:
     get:
       tags:
-        - Users
-      summary: Get all followers
-      security:
-        - apiKey: [ ]
-      parameters:
-        - name: id
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Get all of user followers
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponseList'
-        '500':
-          description: Internal Server Error
-  /v1/users/{id_user}/followings:
-    get:
-      tags:
-        - Users
-      summary: Get all followings
-      security:
-        - apiKey: [ ]
-      parameters:
-        - name: id
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Get all of user following
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponseList'
-        '500':
-          description: Internal Server Error
-  /v1/users/{id_user}/block:
-    patch:
-      tags:
-        - Admin
-      summary: Block user
-      security:
-        - apiKey: [ ]
-      parameters:
-        - name: id_user
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Block user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '500':
-          description: Internal Server Error
-  /v1/users/{id_user}/unblock:
-    patch:
-      tags:
-        - Admin
-      summary: Unblock user
-      security:
-        - apiKey: [ ]
-      parameters:
-        - name: id_user
-          in: path
-          description: User ID
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Unblock user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '500':
-          description: Internal Server Error
-  /v1/users/get_unblock:
-    get:
-      tags:
-        - Admin
-      summary: Get unblock user
+        - Admins
+      summary: Get counts of all users and tweets
       security:
         - apiKey: [ ]
       responses:
         '200':
-          description: Unblock user
+          description: Counts of all users and tweets
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetUsersResponse'
-        '500':
-          description: Internal Server Error
-  /v1/users/get_block:
-    get:
-      tags:
-        - Admin
-      summary: Get block user
-      security:
-        - apiKey: [ ]
-      responses:
-        '200':
-          description: GetBlock user
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/GetUsersResponse'
+                $ref: '#/components/schemas/GetCountsUsersAndTweets'
         '500':
           description: Internal Server Error
 components:
@@ -818,11 +710,6 @@ components:
         location:
           type: string
           format: string
-    SuccessResponseList:
-      type: object
-      properties:
-        status:
-          type: integer
     SuccessResponse:
       type: object
       properties:
@@ -830,22 +717,6 @@ components:
           type: string
         message:
           type: string
-    BlockTweetResponse:
-      type: object
-      properties:
-        tweet_id:
-          type: string
-        message:
-          type: string
-    GetUsersResponse:
-      type: array
-      items:
-        type: object
-        properties:
-          id:
-            type: integer
-          username:
-            type: string
   securitySchemes:
     apiKey:
       type: apiKey

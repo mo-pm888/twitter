@@ -6,10 +6,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"Twitter_like_application/config"
 	"Twitter_like_application/internal/admin"
 	Tweets "Twitter_like_application/internal/tweets"
 	Serviceuser "Twitter_like_application/internal/users"
+
+	"Twitter_like_application/config"
 
 	"github.com/gorilla/mux"
 )
@@ -55,33 +56,15 @@ func Server(c config.Config) error {
 	r.HandleFunc("/v1/tweets/{id_tweet}/unlike", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AuthHandler(http.HandlerFunc(Tweets.UnlikeTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodDelete)
-	r.HandleFunc("/v1/admin/stats", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.Stats)).ServeHTTP(w, r)
-	}).Methods(http.MethodGet)
-	r.HandleFunc("/v1/users/{id_user}/followers", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetAllFollowers)).ServeHTTP(w, r)
-	}).Methods(http.MethodGet)
-	r.HandleFunc("/v1/users/{id_user}/followings", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AuthHandler(http.HandlerFunc(Serviceuser.GetAllFollowings)).ServeHTTP(w, r)
-	}).Methods(http.MethodGet)
-	r.HandleFunc("/v1/users/{id_user}/block", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.BlockUser)).ServeHTTP(w, r)
-	}).Methods(http.MethodPatch)
-	r.HandleFunc("/v1/users/{id_user}/unblock", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.UnblockUser)).ServeHTTP(w, r)
-	}).Methods(http.MethodPatch)
-	r.HandleFunc("/v1/users/get_unblock", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.GetAllUnblockUsers)).ServeHTTP(w, r)
-	}).Methods(http.MethodGet)
-	r.HandleFunc("/v1/users/get_block", func(w http.ResponseWriter, r *http.Request) {
-		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.GetAllBlockUsers)).ServeHTTP(w, r)
-	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/tweets/{id_tweet}/block", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.BlockTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/{id_tweet}/unblock", func(w http.ResponseWriter, r *http.Request) {
 		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.UnblockTweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
+	r.HandleFunc("/v1/admin/stats", func(w http.ResponseWriter, r *http.Request) {
+		Serviceuser.AdminAuthHandler(http.HandlerFunc(admin.Stats)).ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
 	r.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "*")
