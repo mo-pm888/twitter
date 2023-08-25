@@ -1,14 +1,15 @@
 package server
 
 import (
-	"Twitter_like_application/internal/admin"
-	Tweets "Twitter_like_application/internal/tweets"
-	Serviceuser "Twitter_like_application/internal/users"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"net/http/httptest"
+
+	Tweets "Twitter_like_application/internal/tweets"
+	Serviceuser "Twitter_like_application/internal/users"
+
+	"github.com/gorilla/mux"
 )
 
 func Server() {
