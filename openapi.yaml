@@ -779,6 +779,13 @@ components:
           type: string
         message:
           type: string
+    BlockTweetResponse:
+      type: object
+      properties:
+        tweet_id:
+          type: string
+        message:
+          type: string
   securitySchemes:
     apiKey:
       type: apiKey
