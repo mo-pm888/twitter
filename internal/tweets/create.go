@@ -14,7 +14,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type CreatNewTweet struct {
+type CreateNewTweet struct {
 	TweetID             int
 	Text                string `json:"text" validate:"required,checkTweetText"`
 	CreatedAt           time.Time
@@ -26,7 +26,7 @@ type CreatNewTweet struct {
 }
 
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
-	var newTweet CreatNewTweet
+	var newTweet CreateNewTweet
 	err := json.NewDecoder(r.Body).Decode(&newTweet)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
@@ -38,7 +38,7 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusCreated, newTweet)
 }
 
-func (s *Service) CreateNewTweet(tweet *CreatNewTweet, ctx context.Context, parentID int) error {
+func (s *Service) CreateNewTweet(tweet *CreateNewTweet, ctx context.Context, parentID int) error {
 	tweetValid := &TweetValid{
 		Validate: validator.New(),
 		ValidErr: make(map[string]string),

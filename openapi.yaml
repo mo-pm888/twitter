@@ -435,7 +435,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ReplyRequest'
+                $ref: '#/components/schemas/ReplyResponse'
         '401':
           description: Unauthorized
           content:
@@ -795,26 +795,6 @@ components:
           format: date-time
         public:
           type: boolean
-        only_followers:
-          type: boolean
-        only_mutual_followers:
-          type: boolean
-        only_me:
-          type: boolean
-        parent_tweet_id:
-          type: integer
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: string
-    TweetRequest:
-      type: object
-      properties:
-        text:
-          type: string
-        public:
-          type: boolean
           default: true
         only_followers:
           type: boolean
@@ -825,8 +805,13 @@ components:
         only_me:
           type: boolean
           default: false
-      required:
-        - text
+        parent_tweet_id:
+          type: integer
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
     UserProfileUpdateRequest:
       type: object
       properties:
@@ -872,7 +857,7 @@ components:
             type: integer
           username:
             type: string
-    ReplyRequest:
+    ReplyResponse:
       type: object
       properties:
         parentID:

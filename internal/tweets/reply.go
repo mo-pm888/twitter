@@ -15,7 +15,7 @@ type ReplyRequest struct {
 	Text     string `json:"message"`
 }
 type Reply struct {
-	CreatNewTweet
+	CreateNewTweet
 }
 
 func (s *Service) Reply(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,7 @@ func (s *Service) Reply(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
-	if err = s.CreateNewTweet(&tweetReply.CreatNewTweet, r.Context(), parentID); err != nil {
+	if err = s.CreateNewTweet(&tweetReply.CreateNewTweet, r.Context(), parentID); err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
 	answer := ReplyRequest{
