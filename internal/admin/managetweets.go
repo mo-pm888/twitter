@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/services"
 
 	"github.com/gorilla/mux"
@@ -17,45 +16,44 @@ type moderateTweetResponse struct {
 	Message string `json:"message"`
 }
 
-func BlockTweet(w http.ResponseWriter, r *http.Request) {
+func (s *Service) BlockTweet(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
-	err := UpdateTweetBlockStatus(r.Context(), true, tweetID)
-	if err != nil {
+	if err := s.UpdateTweetBlockStatus(r.Context(), true, tweetID); err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	m := moderateTweetResponse{
+
+	msg := moderateTweetResponse{
 		TweetID: tweetID,
 		Message: fmt.Sprintf("tweet %s was blocked", tweetID),
 	}
-	services.ReturnJSON(w, http.StatusOK, m)
+	services.ReturnJSON(w, http.StatusOK, msg)
 }
-func UnblockTweet(w http.ResponseWriter, r *http.Request) {
+func (s *Service) UnblockTweet(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
-	err := UpdateTweetBlockStatus(r.Context(), false, tweetID)
+	err := s.UpdateTweetBlockStatus(r.Context(), false, tweetID)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	m := moderateTweetResponse{
+	msg := moderateTweetResponse{
 		TweetID: tweetID,
 		Message: fmt.Sprintf("tweet %s was unblocked", tweetID),
 	}
-	services.ReturnJSON(w, http.StatusOK, m)
+	services.ReturnJSON(w, http.StatusOK, msg)
 }
 
-func UpdateTweetBlockStatus(ctx context.Context, status bool, tweetID string) error {
+func (s *Service) UpdateTweetBlockStatus(ctx context.Context, status bool, tweetID string) error {
 	query := "SELECT EXISTS(SELECT 1 FROM tweets WHERE tweet_id = $1)"
 	var exists bool
-	err := pg.DB.QueryRowContext(ctx, query, tweetID).Scan(&exists)
-	if err != nil {
+	if err := s.DB.QueryRowContext(ctx, query, tweetID).Scan(&exists); err != nil {
 		return err
 	}
 	if !exists {
 		return errors.New("tweet doesn't exist")
 	}
 	query = "UPDATE tweets SET block = $1 WHERE tweet_id = $2 AND block !=$1"
-	result, err := pg.DB.ExecContext(ctx, query, status, tweetID)
+	result, err := s.DB.ExecContext(ctx, query, status, tweetID)
 	if err != nil {
 		return err
 	}
