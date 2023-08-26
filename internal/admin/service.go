@@ -7,7 +7,7 @@ type Service struct {
 	Settings
 }
 type Settings struct {
-	TweetLength string `json:"max_tweet_length"`
+	TweetLength int `json:"max_tweet_length"`
 }
 
 func New(db *sql.DB) *Service {

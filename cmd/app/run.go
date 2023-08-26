@@ -53,7 +53,7 @@ func ReadSettings(s *admin.Service) error {
 		fmt.Println(err)
 	}
 
-	if s.TweetLength == "" {
+	if s.TweetLength == 0 {
 		if err = s.DefaultMaxTweetLength(); err != nil {
 			return err
 		}

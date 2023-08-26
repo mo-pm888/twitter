@@ -611,7 +611,7 @@ paths:
               type: object
               properties:
                 max_tweet_length:
-                  type: string
+                  type: integer
       responses:
         '200':
           description: Tweet length was changed

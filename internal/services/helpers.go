@@ -169,10 +169,3 @@ func ReturnJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 		ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
 }
-func StrToInt(str string) (int, error) {
-	num, err := strconv.Atoi(str)
-	if err != nil {
-		return 0, nil
-	}
-	return num, nil
-}

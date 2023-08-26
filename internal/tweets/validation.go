@@ -2,7 +2,6 @@ package tweets
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -19,13 +18,12 @@ func (v *TweetValid) Error() string {
 }
 
 func (s *Service) CheckTweetText(fl validator.FieldLevel, v *TweetValid) bool {
-	maxLengthTweet, err := strconv.Atoi(s.TweetLength)
-	if err != nil {
-		return false
-	}
+	//maxLengthTweet, err := strconv.Atoi(s.TweetLength)
+	//if err != nil {
+	//	return false
+	//}
 	text := fl.Field().String()
-	fmt.Println(maxLengthTweet)
-	if len(text) > maxLengthTweet {
+	if len(text) > s.TweetLength {
 		v.ValidErr["tweet"] += "long text,"
 	}
 	return true

@@ -12,14 +12,14 @@ type SettingResponse struct {
 	Text string `json:"message"`
 }
 
-func (s *Service) SettingTweetLength(w http.ResponseWriter, r *http.Request) {
-	var newLength Settings
-	if err := json.NewDecoder(r.Body).Decode(&newLength); err != nil {
+func (s *Service) SettingsTweet(w http.ResponseWriter, r *http.Request) {
+	var newSettings Settings
+	if err := json.NewDecoder(r.Body).Decode(&newSettings); err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	s.TweetLength = newLength.TweetLength
-	jsonValue, err := json.Marshal(newLength)
+	s.TweetLength = newSettings.TweetLength
+	jsonValue, err := json.Marshal(newSettings)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -30,12 +30,12 @@ func (s *Service) SettingTweetLength(w http.ResponseWriter, r *http.Request) {
 	}
 
 	msg := SettingResponse{
-		Text: fmt.Sprintf("the maximum tweet length is now %s characters.", newLength.TweetLength),
+		Text: fmt.Sprintf("the maximum tweet length is now %d characters.", newSettings.TweetLength),
 	}
 	services.ReturnJSON(w, http.StatusOK, msg)
 }
 func (s *Service) DefaultMaxTweetLength() error {
-	defaultLength := &Settings{TweetLength: "400"}
+	defaultLength := &Settings{TweetLength: 400}
 	jsonValue, err := json.Marshal(defaultLength)
 	if err != nil {
 		return err
