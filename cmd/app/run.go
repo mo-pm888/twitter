@@ -48,10 +48,16 @@ func Run() error {
 }
 
 func ReadSettings(s *admin.Service) error {
-	tweetSetting, err := s.GetSettings("tweet")
+	err := s.GetSettings("tweet")
 	if err != nil {
-		return err
+		fmt.Println(err)
 	}
-	s.TweetLength = tweetSetting.TweetLength
+
+	if s.TweetLength == "" {
+		if err = s.DefaultMaxTweetLength(); err != nil {
+			return err
+		}
+		fmt.Println("default tweet length settings applied")
+	}
 	return nil
 }

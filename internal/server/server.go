@@ -73,11 +73,11 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service)
 	r.HandleFunc("/v1/users/get_block", func(w http.ResponseWriter, r *http.Request) {
 		s.AdminAuthHandler(http.HandlerFunc(a.GetAllBlockUsers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
-	r.HandleFunc("/v1/tweet/length/{new_length}", func(w http.ResponseWriter, r *http.Request) {
-		adaptedHandler := func(w http.ResponseWriter, r *http.Request) {
-			a.SettingTweetLength(w, r, c)
-		}
-		s.AdminAuthHandler(http.HandlerFunc(adaptedHandler)).ServeHTTP(w, r)
+	r.HandleFunc("/v1/users/get_block", func(w http.ResponseWriter, r *http.Request) {
+		s.AdminAuthHandler(http.HandlerFunc(a.GetAllBlockUsers)).ServeHTTP(w, r)
+	}).Methods(http.MethodGet)
+	r.HandleFunc("/v1/tweet/length", func(w http.ResponseWriter, r *http.Request) {
+		s.AdminAuthHandler(http.HandlerFunc(a.SettingTweetLength)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")

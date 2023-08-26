@@ -1,50 +1,55 @@
 package admin
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
-	"Twitter_like_application/config"
 	"Twitter_like_application/internal/services"
-
-	"github.com/gorilla/mux"
 )
 
-type SettingRequest struct {
+type SettingResponse struct {
 	Text string `json:"message"`
 }
 
-func (s *Service) SettingTweetLength(w http.ResponseWriter, r *http.Request, c config.Config) {
-	newLength, err := services.StrToInt(mux.Vars(r)["new_length"])
+func (s *Service) SettingTweetLength(w http.ResponseWriter, r *http.Request) {
+	var newLength Settings
+	if err := json.NewDecoder(r.Body).Decode(&newLength); err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	s.TweetLength = newLength.TweetLength
+	jsonValue, err := json.Marshal(newLength)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	c.MaxLengthTweet = strconv.Itoa(newLength)
-	if err != nil {
+	if err = s.ChangeSettings("tweet", jsonValue); err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	//err = changeENV(newLength, s.DB)
-	if err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+
+	msg := SettingResponse{
+		Text: fmt.Sprintf("the maximum tweet length is now %s characters.", newLength.TweetLength),
 	}
-	m := SettingRequest{
-		Text: fmt.Sprintf("maximum tweet length is %d now", newLength),
-	}
-	services.ReturnJSON(w, http.StatusOK, m)
+	services.ReturnJSON(w, http.StatusOK, msg)
 }
-
-func changeTweetLength(newLength int, db *sql.DB) error {
-
+func (s *Service) DefaultMaxTweetLength() error {
+	defaultLength := &Settings{TweetLength: "400"}
+	jsonValue, err := json.Marshal(defaultLength)
+	if err != nil {
+		return err
+	}
+	if err = s.ChangeSettings("tweet", jsonValue); err != nil {
+		return err
+	}
 	return nil
 }
-
-func (s *Service) InsertSettings(key string, value []byte) error {
+func (s *Service) ChangeSettings(key string, value []byte) error {
 	query := `
         INSERT INTO settings (key, value)
-        VALUES ($1, $2);
+        VALUES ($1, $2)
+        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
     `
 	_, err := s.DB.Exec(query, key, value)
 	if err != nil {
@@ -53,7 +58,7 @@ func (s *Service) InsertSettings(key string, value []byte) error {
 	return nil
 }
 
-func (s *Service) GetSettings(key string) (*Settings, error) {
+func (s *Service) GetSettings(key string) error {
 	query := `
         SELECT value
         FROM settings
@@ -62,13 +67,13 @@ func (s *Service) GetSettings(key string) (*Settings, error) {
 	var settingsJSON []byte
 	err := s.DB.QueryRow(query, key).Scan(&settingsJSON)
 	if err != nil {
-		return nil, err
+		return err
 	}
-
 	var settings Settings
 	err = json.Unmarshal(settingsJSON, &settings)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &settings, nil
+	s.TweetLength = settings.TweetLength
+	return nil
 }

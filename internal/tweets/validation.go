@@ -18,7 +18,7 @@ func (v *TweetValid) Error() string {
 	return result
 }
 
-func CheckTweetText(fl validator.FieldLevel, v *TweetValid, s *Service) bool {
+func (s *Service) CheckTweetText(fl validator.FieldLevel, v *TweetValid) bool {
 	maxLengthTweet, err := strconv.Atoi(s.TweetLength)
 	if err != nil {
 		return false
@@ -30,9 +30,9 @@ func CheckTweetText(fl validator.FieldLevel, v *TweetValid, s *Service) bool {
 	}
 	return true
 }
-func RegisterTweetValidations(tweetValid *TweetValid, s *Service) error {
+func (s *Service) RegisterTweetValidations(tweetValid *TweetValid) error {
 	err := tweetValid.Validate.RegisterValidation("checkTweetText", func(fl validator.FieldLevel) bool {
-		return CheckTweetText(fl, tweetValid, s)
+		return s.CheckTweetText(fl, tweetValid)
 	})
 	if err != nil {
 		return err

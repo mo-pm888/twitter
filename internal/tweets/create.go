@@ -26,7 +26,7 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		Validate: validator.New(),
 		ValidErr: make(map[string]string),
 	}
-	if err := RegisterTweetValidations(tweetValid, s); err != nil {
+	if err := s.RegisterTweetValidations(tweetValid); err != nil {
 		fmt.Println(err)
 	}
 	userID := r.Context().Value("userID").(string)
