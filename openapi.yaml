@@ -843,7 +843,7 @@ components:
     SuccessResponse:
       type: object
       properties:
-        status:
+        tweetID:
           type: string
         message:
           type: string
