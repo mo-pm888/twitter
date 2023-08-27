@@ -18,10 +18,6 @@ func (v *TweetValid) Error() string {
 }
 
 func (s *Service) CheckTweetText(fl validator.FieldLevel, v *TweetValid) bool {
-	//maxLengthTweet, err := strconv.Atoi(s.TweetLength)
-	//if err != nil {
-	//	return false
-	//}
 	text := fl.Field().String()
 	if len(text) > s.TweetLength {
 		v.ValidErr["tweet"] += "long text,"

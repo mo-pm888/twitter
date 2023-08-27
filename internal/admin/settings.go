@@ -52,10 +52,7 @@ func (s *Service) ChangeSettings(key string, value []byte) error {
         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
     `
 	_, err := s.DB.Exec(query, key, value)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (s *Service) GetSettings(key string) error {
