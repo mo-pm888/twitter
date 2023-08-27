@@ -30,17 +30,12 @@ func (s *Service) Home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := r.Context().Value("userID").(string)
-	userIDint, err := strconv.Atoi(userID)
-	if err != nil {
-		services.ReturnErr(w, "Invalid user ID", http.StatusInternalServerError)
-		return
-	}
+	userID := r.Context().Value("userID").(int)
 
 	offset := (page - 1) * perPage
 	limit := perPage
 	followingQuery := "SELECT following FROM follower WHERE follower = $1"
-	rows, err := s.DB.Query(followingQuery, userIDint)
+	rows, err := s.DB.Query(followingQuery, userID)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
