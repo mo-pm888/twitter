@@ -81,6 +81,7 @@ func (s *Service) AuthHandler(next http.Handler) http.Handler {
 			services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
 		}
 	})
+
 }
 
 func (s *Service) AdminAuthHandler(next http.Handler) http.Handler {
