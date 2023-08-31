@@ -17,7 +17,7 @@ type UsersList struct {
 }
 
 type messageRequest struct {
-	UserID string `json:"id"`
+	UserID string `json:"tweet_id"`
 	Text   string `json:"message"`
 }
 

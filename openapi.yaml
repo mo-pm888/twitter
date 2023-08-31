@@ -843,8 +843,8 @@ components:
     SuccessResponse:
       type: object
       properties:
-        tweetID:
-          type: string
+        tweet_id:
+          type: integer
         message:
           type: string
     GetUsersResponse:
