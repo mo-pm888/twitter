@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"Twitter_like_application/internal/services"
-	Tweets "Twitter_like_application/internal/tweets"
 
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -24,7 +23,7 @@ type User struct {
 	Nickname           string `json:"nickname" validate:"omitempty"`
 	Bio                string `json:"bio" validate:"omitempty"`
 	Location           string `json:"location" validate:"omitempty"`
-	Tweets.Tweet
+	//Tweets.Tweet
 }
 
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
@@ -34,6 +33,7 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	
 	query := `SELECT id FROM users_tweeter WHERE email = $1`
 	var existingUserID int
 	err = s.DB.QueryRow(query, newUser.Email).Scan(&existingUserID)

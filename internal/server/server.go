@@ -8,13 +8,14 @@ import (
 
 	"Twitter_like_application/config"
 	"Twitter_like_application/internal/admin"
+	"Twitter_like_application/internal/authorization"
 	tweets "Twitter_like_application/internal/tweets"
 	"Twitter_like_application/internal/users"
 
 	"github.com/gorilla/mux"
 )
 
-func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service) error {
+func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service, auth authorization.Service) error {
 	r := mux.NewRouter()
 	fmt.Printf("starting server on %s:%s\n", c.ServerHost, c.ServerPort)
 	r.Use(LoggingMiddleware)
@@ -23,55 +24,55 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service)
 	r.HandleFunc("/v1/users/login", s.LogIn).Methods(http.MethodPost)
 	//http.Handle("/v1/users/logout", users.AuthHandler(http.HandlerFunc(s.LogOut)))
 	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(s.GetCurrentProfile)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(s.GetCurrentProfile)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/home", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(t.Home)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(t.Home)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/reset-password", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(s.ResetPassword)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(s.ResetPassword)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/{id}/follow", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(s.Follow)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(s.Follow)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/{id}/unfollow", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(s.Unfollow)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(s.Unfollow)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/edit", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(s.EditProfile)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(s.EditProfile)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/create", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(t.Create)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(t.Create)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/tweets/{id_tweet}", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(t.Edit)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(t.Edit)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/{id_tweet}/retweet", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(t.Retweet)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(t.Retweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/tweets/{id_tweet}/like", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(t.Like)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(t.Like)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/tweets/{id_tweet}/unlike", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(t.Unlike)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(t.Unlike)).ServeHTTP(w, r)
 	}).Methods(http.MethodDelete)
 	r.HandleFunc("/v1/users/{id_user}/followers", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(s.GetAllFollowers)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(s.GetAllFollowers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/{id_user}/followings", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(s.GetAllFollowings)).ServeHTTP(w, r)
+		auth.AuthHandler(http.HandlerFunc(s.GetAllFollowings)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/{id_user}/block", func(w http.ResponseWriter, r *http.Request) {
-		s.AdminAuthHandler(http.HandlerFunc(a.BlockUser)).ServeHTTP(w, r)
+		auth.AdminAuthHandler(http.HandlerFunc(a.BlockUser)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/users/{id_user}/unblock", func(w http.ResponseWriter, r *http.Request) {
-		s.AdminAuthHandler(http.HandlerFunc(a.UnblockUser)).ServeHTTP(w, r)
+		auth.AdminAuthHandler(http.HandlerFunc(a.UnblockUser)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/users/get_unblock", func(w http.ResponseWriter, r *http.Request) {
-		s.AdminAuthHandler(http.HandlerFunc(a.GetAllUnblockUsers)).ServeHTTP(w, r)
+		auth.AdminAuthHandler(http.HandlerFunc(a.GetAllUnblockUsers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/users/get_block", func(w http.ResponseWriter, r *http.Request) {
-		s.AdminAuthHandler(http.HandlerFunc(a.GetAllBlockUsers)).ServeHTTP(w, r)
+		auth.AdminAuthHandler(http.HandlerFunc(a.GetAllBlockUsers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
