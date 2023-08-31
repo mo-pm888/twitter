@@ -49,7 +49,7 @@ func (s *Service) Edit(w http.ResponseWriter, r *http.Request) {
 		Validate: validator.New(),
 		ValidErr: make(map[string]string),
 	}
-	if err := RegisterTweetValidations(tweetValid); err != nil {
+	if err := s.RegisterTweetValidations(tweetValid); err != nil {
 		fmt.Println(err)
 	}
 

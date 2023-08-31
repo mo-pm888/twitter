@@ -121,6 +121,16 @@ var items = []darwin.Migration{
 		Script: `alter table users_tweeter add admin bool default false not null;
 		`,
 	},
+	{
+		Version:     15,
+		Description: `add table settings`,
+		Script: `
+        create table settings (
+            key TEXT PRIMARY KEY,
+            value JSON
+        );
+    `,
+	},
 }
 
 func Run(db *sql.DB) error {
