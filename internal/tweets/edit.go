@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"Twitter_like_application/internal/services"
 
@@ -18,34 +17,9 @@ type EditTweetRequest struct {
 	Visibility
 }
 
-type Visibility struct {
-	Public              bool `json:"public"`
-	OnlyFollowers       bool `json:"only_followers"`
-	OnlyMutualFollowers bool `json:"only_mutual_followers"`
-	OnlyMe              bool `json:"only_me"`
-}
-
-func (v *Visibility) count() int {
-	count := 0
-	switch true {
-	case v.Public:
-		count++
-	case v.OnlyFollowers:
-		count++
-	case v.OnlyMutualFollowers:
-		count++
-	case v.OnlyMe:
-		count++
-	}
-	return count
-}
-func (v *Visibility) isValid() bool {
-	return v.count() < 2
-}
-
 func (s *Service) Edit(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
-	userID := r.Context().Value("userID").(string)
+	userID := r.Context().Value("userID").(int)
 	tweetValid := &TweetValid{
 		Validate: validator.New(),
 		ValidErr: make(map[string]string),
@@ -75,11 +49,7 @@ func (s *Service) Edit(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	id, err := strconv.Atoi(userID)
-	if err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-	}
-	if tweet.UserID != id {
+	if tweet.UserID != userID {
 		http.Error(w, "it isn't your tweet", http.StatusUnauthorized)
 		return
 	}
