@@ -596,7 +596,7 @@ paths:
                 $ref: '#/components/schemas/GetUsersResponse'
         '500':
           description: Internal Server Error
-  /v1/tweet/length:
+  /v1/tweet/settings:
     patch:
       tags:
         - Admin
