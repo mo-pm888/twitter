@@ -1,6 +1,11 @@
 package services
 
-import "net/http"
+import (
+	"database/sql"
+	"net/http"
+
+	"Twitter_like_application/config"
+)
 
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type Authorization interface {
@@ -24,4 +29,8 @@ type Users interface {
 	GetAllFollowers(w http.ResponseWriter, r *http.Request)
 	LogIn(w http.ResponseWriter, r *http.Request)
 	LogOut(w http.ResponseWriter, r *http.Request)
+}
+
+type DB interface {
+	ConnectPostgresql(c config.Config) (*sql.DB, error)
 }

@@ -33,12 +33,12 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 	query := `SELECT id FROM users_tweeter WHERE email = $1`
 	var existingUserID int
 	err = s.DB.QueryRow(query, newUser.Email).Scan(&existingUserID)
 	if err == nil {
-		services.ReturnErr(w, "The user has already existed with this email ", http.StatusBadRequest)
+		services.ReturnErr(w, "The user has already existed with this email", http.StatusBadRequest)
 		return
 	} else if err != sql.ErrNoRows {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
