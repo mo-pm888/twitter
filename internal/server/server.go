@@ -8,18 +8,21 @@ import (
 
 	"Twitter_like_application/config"
 	"Twitter_like_application/internal/admin"
+	"Twitter_like_application/internal/services"
 	tweets "Twitter_like_application/internal/tweets"
 	"Twitter_like_application/internal/users"
 
 	"github.com/gorilla/mux"
 )
 
-func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service) error {
+func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service, validator services.Services) error {
 	r := mux.NewRouter()
 	fmt.Printf("starting server on %s:%s\n", c.ServerHost, c.ServerPort)
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
-	r.HandleFunc("/v1/users/create", s.Create).Methods(http.MethodPost)
+	r.HandleFunc("/v1/users/create", func(w http.ResponseWriter, r *http.Request) {
+		s.Create(w, r, validator)
+	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/login", s.LogIn).Methods(http.MethodPost)
 	//http.Handle("/v1/users/logout", users.AuthHandler(http.HandlerFunc(s.LogOut)))
 	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
@@ -38,13 +41,19 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service)
 		s.AuthHandler(http.HandlerFunc(s.Unfollow)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/edit", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(s.EditProfile)).ServeHTTP(w, r)
+		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			s.EditProfile(w, r, validator)
+		})).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/create", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(t.Create)).ServeHTTP(w, r)
+		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			t.Create(w, r, validator)
+		})).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
-	r.HandleFunc("/v1/tweets/{id_tweet}", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(t.Edit)).ServeHTTP(w, r)
+	r.HandleFunc("/v1/tweets/{id_tweet", func(w http.ResponseWriter, r *http.Request) {
+		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			t.Edit(w, r, validator)
+		})).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/{id_tweet}/retweet", func(w http.ResponseWriter, r *http.Request) {
 		s.AuthHandler(http.HandlerFunc(t.Retweet)).ServeHTTP(w, r)

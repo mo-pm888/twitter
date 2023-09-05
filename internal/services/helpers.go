@@ -132,13 +132,19 @@ func ExtractUserIDFromSessionCookie(cookieValue string) (string, error) {
 //		}
 //		return count, nil
 //	}
-func ReturnErr(w http.ResponseWriter, err string, code int) {
+func ReturnErr(w http.ResponseWriter, err interface{}, code int) {
 	var errj ErrResponse
-	errj.Errtext = err
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(errj)
+	switch v := err.(type) {
+	case string:
+		errj.Errtext = v
+	case error:
+		errj.Errtext = v.Error()
+	default:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(code)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
 }
 func CheckEmail(w http.ResponseWriter, email string) {
 	if !emailRegex.MatchString(email) {
@@ -147,17 +153,6 @@ func CheckEmail(w http.ResponseWriter, email string) {
 	}
 	if len(email) > 320 {
 		ReturnErr(w, "Name exceeds maximum length", http.StatusBadRequest)
-		return
-	}
-}
-func CheckPassword(w http.ResponseWriter, password string) {
-	passwordRegex := regexp.MustCompile(`^[a-zA-Z]+$`)
-	if !passwordRegex.MatchString(password) {
-		ReturnErr(w, "Invalid password format", http.StatusBadRequest)
-		return
-	}
-	if len(password) > 100 {
-		ReturnErr(w, "Password exceeds maximum length", http.StatusBadRequest)
 		return
 	}
 }
