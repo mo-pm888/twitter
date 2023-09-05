@@ -3,12 +3,10 @@ package tweets
 import (
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"Twitter_like_application/internal/services"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
@@ -42,22 +40,18 @@ func (v *Visibility) isValid() bool {
 	return v.count() < 2
 }
 
-func (s *Service) Edit(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Edit(w http.ResponseWriter, r *http.Request, validator services.Services) {
 	tweetID := mux.Vars(r)["id_tweet"]
 	userID := r.Context().Value("userID").(int)
-	tweetValid := &TweetValid{
-		Validate: validator.New(),
-		ValidErr: make(map[string]string),
-	}
-	if err := RegisterTweetValidations(tweetValid); err != nil {
-		fmt.Println(err)
-	}
-
 	var request EditTweetRequest
 	var tweet Tweet
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = validator.Validate.Struct(request); err != nil {
+		services.ReturnErr(w, validator.ValidErr, http.StatusBadRequest)
 		return
 	}
 	if !request.isValid() {

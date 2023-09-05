@@ -25,25 +25,17 @@ type EditUserRequest struct {
 	Location  string `json:"location" validate:"omitempty,checkLocation"`
 }
 
-func (s *Service) EditProfile(w http.ResponseWriter, r *http.Request) {
-	userValid := &UserValid{
-		validate: validator.New(),
-		validErr: make(map[string]string),
-	}
+func (s *Service) EditProfile(w http.ResponseWriter, r *http.Request, validator services.Services) {
 	updatedProfile := EditUserRequest{}
-	if err := RegisterUsersValidations(userValid); err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	err := json.NewDecoder(r.Body).Decode(&updatedProfile)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	userID := r.Context().Value("userID").(int)
-	err = updateProfile(&updatedProfile, userID, userValid, s.DB)
+	err = updateProfile(&updatedProfile, userID, validator.Validate, s.DB)
 	if err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+		services.ReturnErr(w, validator.ValidErr, http.StatusInternalServerError)
 		return
 	}
 
@@ -51,13 +43,13 @@ func (s *Service) EditProfile(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusOK, message)
 }
 
-func updateProfile(updatedProfile *EditUserRequest, userID int, v *UserValid, s *sql.DB) error {
+func updateProfile(updatedProfile *EditUserRequest, userID int, v *validator.Validate, s *sql.DB) error {
 	var (
 		hashedPassword []byte
 		keys           = []string{}
 		values         = []any{}
 	)
-	err := v.validate.Struct(updatedProfile)
+	err := v.Struct(updatedProfile)
 	if err != nil {
 		return err
 	}

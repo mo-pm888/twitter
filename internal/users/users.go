@@ -10,11 +10,8 @@ import (
 	"net/http"
 	"net/smtp"
 	"net/url"
-	"strings"
 
 	"Twitter_like_application/internal/services"
-
-	"github.com/go-playground/validator/v10"
 )
 
 const (
@@ -22,24 +19,19 @@ const (
 	ctxKeyIsAdmin = "isAdmin"
 )
 
-type UserValid struct {
-	validate *validator.Validate
-	validErr map[string]string
-}
-type NameVal struct {
-	short    bool
-	long     bool
-	realName bool
-}
+//	type UserValid struct {
+//		validate *validator.Validate
+//		validErr map[string]string
+//	}
 
-func (v *UserValid) Error() string {
-	var pairs []string
-	for k, v := range v.validErr {
-		pairs = append(pairs, fmt.Sprintf("%s: %s", k, v))
-	}
-
-	return strings.Join(pairs, "; ")
-}
+//func (v *UserValid) Error() string {
+//	var pairs []string
+//	for k, v := range v.validErr {
+//		pairs = append(pairs, fmt.Sprintf("%s: %s", k, v))
+//	}
+//
+//	return strings.Join(pairs, "; ")
+//}
 
 func checkAuth(w http.ResponseWriter, r *http.Request, s *sql.DB) *http.Request {
 	apikey := r.Header.Get("X-API-KEY")
@@ -344,51 +336,5 @@ func DeleteUserSession(token string, s *sql.DB) error {
 		return err
 	}
 
-	return nil
-}
-func RegisterUsersValidations(userValid *UserValid) error {
-	err := userValid.validate.RegisterValidation("checkPassword", func(fl validator.FieldLevel) bool {
-		return CheckPassword(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("checkName", func(fl validator.FieldLevel) bool {
-		return CheckName(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-
-	err = userValid.validate.RegisterValidation("checkDate", func(fl validator.FieldLevel) bool {
-		return CheckDate(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("checkNickname", func(fl validator.FieldLevel) bool {
-		return CheckNickName(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("checkBio", func(fl validator.FieldLevel) bool {
-		return CheckBio(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("checkLocation", func(fl validator.FieldLevel) bool {
-		return CheckLocation(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("email", func(fl validator.FieldLevel) bool {
-		return CheckEmailVal(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
 	return nil
 }

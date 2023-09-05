@@ -14,24 +14,28 @@ import (
 
 type User struct {
 	ID                 int
-	Name               string `json:"name" validate:"omitempty"`
-	Password           string `json:"password" validate:"omitempty"`
+	Name               string `json:"name" validate:"omitempty,checkName"`
+	Password           string `json:"password" validate:"omitempty,checkPassword"`
 	Email              string `json:"email" validate:"omitempty,email"`
 	EmailToken         string
 	ConfirmEmailToken  bool
 	ResetPasswordToken string
-	BirthDate          string `json:"birthdate" validate:"omitempty"`
-	Nickname           string `json:"nickname" validate:"omitempty"`
-	Bio                string `json:"bio" validate:"omitempty"`
-	Location           string `json:"location" validate:"omitempty"`
+	BirthDate          string `json:"birthdate" validate:"omitempty,checkDate"`
+	Nickname           string `json:"nickname" validate:"omitempty,checkNickname""`
+	Bio                string `json:"bio" validate:"omitempty,checkBio"`
+	Location           string `json:"location" validate:"omitempty,checkLocation"`
 	Tweets.Tweet
 }
 
-func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Create(w http.ResponseWriter, r *http.Request, validator services.Services) {
 	newUser := &User{}
 	err := json.NewDecoder(r.Body).Decode(newUser)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = validator.Validate.Struct(newUser); err != nil {
+		services.ReturnErr(w, validator.ValidErr, http.StatusBadRequest)
 		return
 	}
 	query := `SELECT id FROM users_tweeter WHERE email = $1`
