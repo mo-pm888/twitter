@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"net/mail"
 	"regexp"
 	"strings"
@@ -154,6 +155,7 @@ func CheckLocation(fl validator.FieldLevel, v *UserValid) bool {
 func CheckEmailVal(fl validator.FieldLevel, v *UserValid) bool {
 	email := fl.Field().String()
 	_, err := mail.ParseAddress(email)
+	fmt.Println(err)
 	if err != nil {
 		v.validErr["email"] = "not correct email"
 		return false

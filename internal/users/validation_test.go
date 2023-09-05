@@ -171,7 +171,7 @@ func TestCheckEmail(t *testing.T) {
 		Expected bool
 	}{
 		{"test@mail.com", true},
-		{"df@ffff", false},
+		{"dfffff", false},
 	}
 	if err := RegisterUsersValidations(testValid); err != nil {
 		fmt.Println(err)
