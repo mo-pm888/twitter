@@ -63,7 +63,7 @@ func (s *Service) AuthHandler(next http.Handler) http.Handler {
 
 	})
 }
-func (s *Service) AuthHandlerAnother(next http.Handler) http.Handler {
+func (s *Service) UnauthenticatedHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		newR := s.CheckAuth(w, r)
 		if newR == nil {

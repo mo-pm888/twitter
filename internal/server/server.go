@@ -76,7 +76,7 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service,
 		auth.AdminAuthHandler(http.HandlerFunc(a.GetAllBlockUsers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.HandleFunc("/v1/tweets/explore", func(w http.ResponseWriter, r *http.Request) {
-		auth.AuthHandlerAnother(http.HandlerFunc(t.Explore)).ServeHTTP(w, r)
+		auth.UnauthenticatedHandler(http.HandlerFunc(t.Explore)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
 	r.Methods(http.MethodOptions).HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
