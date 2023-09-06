@@ -6,6 +6,7 @@ import (
 
 	"Twitter_like_application/config"
 	"Twitter_like_application/internal/admin"
+	"Twitter_like_application/internal/authorization"
 	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/server"
 	"Twitter_like_application/internal/tweets"
@@ -30,13 +31,14 @@ func Run() error {
 	u := users.New(db)
 	t := tweets.New(db)
 	a := admin.New(db)
+	auth := authorization.New(db)
 	err = migrations.Run(db)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println(migrationGoodMsg)
 	}
-	if err = server.Server(*c, *u, *t, *a); err != nil {
+	if err = server.Server(*c, *u, *t, *a, *auth); err != nil {
 		return err
 	}
 	return nil
