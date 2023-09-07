@@ -6,10 +6,10 @@ An attempt to recreate one of the largest social networking application Twitter.
 
 ## Services
 
-1. [User Service](./users/)
-2. [Tweet Service](./tweets/)
-3. [Admin Service](./admin/)
-4. [DB Service](./database/)
+1. [User Service](./internal/users/)
+2. [Tweet Service](./internal/tweets/)
+3. [Admin Service](./internal/admin/)
+4. [DB Service](./internal/database/)
 
 ## Technologies Used
 
