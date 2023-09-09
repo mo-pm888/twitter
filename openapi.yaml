@@ -391,6 +391,52 @@ paths:
           description: Tweet not found
         '500':
           description: Internal server error
+  /v1/tweets/{id_tweet}/unblock:
+    patch:
+      tags:
+        - Admins
+      summary: Unblock tweet
+      security:
+        - apiKey: [ ]
+      parameters:
+        - name: id_tweet
+          in: path
+          description: Tweet ID
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Unblock user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessTweetResponse'
+        '500':
+          description: Internal Server Error
+  /v1/tweets/{id_tweet}/block:
+      patch:
+        tags:
+          - Admins
+        summary: Block tweet
+        security:
+          - apiKey: [ ]
+        parameters:
+          - name: id_tweet
+            in: path
+            description: Tweet ID
+            required: true
+            schema:
+              type: integer
+        responses:
+          '200':
+            description: Block user
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/SuccessTweetResponse'
+          '500':
+            description: Internal Server Error
   /v1/tweets/{tweet_id}/reply:
     post:
       tags:
@@ -511,6 +557,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+
   /v1/tweets/{id_tweet}/delete:
     delete:
       tags:
@@ -599,7 +647,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/SuccessUserResponse'
         '500':
           description: Internal Server Error
   /v1/users/{id_user}/unblock:
@@ -622,7 +670,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
+                $ref: '#/components/schemas/SuccessUserResponse'
         '500':
           description: Internal Server Error
   /v1/users/get_unblock:
@@ -841,11 +889,18 @@ components:
       properties:
         status:
           type: integer
-    SuccessResponse:
+    SuccessUserResponse:
       type: object
       properties:
-        status:
+        user_id:
+          type: integer
+        message:
           type: string
+    SuccessTweetResponse:
+      type: object
+      properties:
+        tweet_id:
+          type: integer
         message:
           type: string
     GetUsersResponse:

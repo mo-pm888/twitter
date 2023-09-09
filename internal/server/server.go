@@ -70,6 +70,12 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service)
 	r.HandleFunc("/v1/users/{id_user}/unblock", func(w http.ResponseWriter, r *http.Request) {
 		s.AdminAuthHandler(http.HandlerFunc(a.UnblockUser)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
+	r.HandleFunc("/v1/tweets/{id_tweet}/block", func(w http.ResponseWriter, r *http.Request) {
+		s.AdminAuthHandler(http.HandlerFunc(a.BlockTweet)).ServeHTTP(w, r)
+	}).Methods(http.MethodPatch)
+	r.HandleFunc("/v1/tweets/{id_tweet}/unblock", func(w http.ResponseWriter, r *http.Request) {
+		s.AdminAuthHandler(http.HandlerFunc(a.UnblockTweet)).ServeHTTP(w, r)
+	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/users/get_unblock", func(w http.ResponseWriter, r *http.Request) {
 		s.AdminAuthHandler(http.HandlerFunc(a.GetAllUnblockUsers)).ServeHTTP(w, r)
 	}).Methods(http.MethodGet)
