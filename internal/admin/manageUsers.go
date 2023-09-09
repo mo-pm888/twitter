@@ -16,8 +16,8 @@ type UsersList struct {
 	Username string `json:"username"`
 }
 
-type messageRequest struct {
-	UserID string `json:"tweet_id"`
+type messageResponse struct {
+	UserID string `json:"user_id"`
 	Text   string `json:"message"`
 }
 
@@ -27,7 +27,7 @@ func (s *Service) BlockUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	message := messageRequest{
+	message := messageResponse{
 		UserID: userID,
 		Text:   fmt.Sprintf("user %s was blocked", userID),
 	}
@@ -40,7 +40,7 @@ func (s *Service) UnblockUser(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	message := messageRequest{
+	message := messageResponse{
 		UserID: userID,
 		Text:   fmt.Sprintf("user %s was unblocked", userID),
 	}

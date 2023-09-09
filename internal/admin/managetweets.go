@@ -44,15 +44,7 @@ func (s *Service) UnblockTweet(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) UpdateTweetBlockStatus(ctx context.Context, status bool, tweetID string) error {
-	query := "SELECT EXISTS(SELECT 1 FROM tweets WHERE tweet_id = $1)"
-	var exists bool
-	if err := s.DB.QueryRowContext(ctx, query, tweetID).Scan(&exists); err != nil {
-		return err
-	}
-	if !exists {
-		return errors.New("tweet doesn't exist")
-	}
-	query = "UPDATE tweets SET block = $1 WHERE tweet_id = $2 AND block !=$1"
+	query := "UPDATE tweets SET block = $1 WHERE tweet_id = $2 AND block !=$1"
 	result, err := s.DB.ExecContext(ctx, query, status, tweetID)
 	if err != nil {
 		return err
