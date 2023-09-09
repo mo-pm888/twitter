@@ -49,6 +49,9 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service)
 	r.HandleFunc("/v1/tweets/{id_tweet}/retweet", func(w http.ResponseWriter, r *http.Request) {
 		s.AuthHandler(http.HandlerFunc(t.Retweet)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
+	r.HandleFunc("/v1/tweets/{id_tweet}/reply", func(w http.ResponseWriter, r *http.Request) {
+		s.AuthHandler(http.HandlerFunc(t.Reply)).ServeHTTP(w, r)
+	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/tweets/{id_tweet}/like", func(w http.ResponseWriter, r *http.Request) {
 		s.AuthHandler(http.HandlerFunc(t.Like)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)

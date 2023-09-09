@@ -36,7 +36,6 @@ func (s *Service) Home(w http.ResponseWriter, r *http.Request) {
 		services.ReturnErr(w, "Invalid user ID", http.StatusInternalServerError)
 		return
 	}
-
 	offset := (page - 1) * perPage
 	limit := perPage
 	followingQuery := "SELECT following FROM follower WHERE follower = $1"

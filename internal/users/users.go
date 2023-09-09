@@ -60,7 +60,7 @@ func checkAuth(w http.ResponseWriter, r *http.Request, s *sql.DB) *http.Request 
 	}
 	query := `SELECT us.user_id, ut.admin FROM user_session us JOIN users_tweeter ut ON us.user_id = ut.id WHERE us.session_id = $1 LIMIT 1`
 
-	var userID string
+	var userID int
 	var isAdmin bool
 	err = s.QueryRow(query, sessionID).Scan(&userID, &isAdmin)
 	if err != nil {
@@ -80,8 +80,8 @@ func (s *Service) AuthHandler(next http.Handler) http.Handler {
 		} else {
 			services.ReturnErr(w, "Unauthorized", http.StatusUnauthorized)
 		}
-
 	})
+
 }
 
 func (s *Service) AdminAuthHandler(next http.Handler) http.Handler {
