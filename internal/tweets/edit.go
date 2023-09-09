@@ -17,31 +17,6 @@ type EditTweetRequest struct {
 	Visibility
 }
 
-type Visibility struct {
-	Public              bool `json:"public"`
-	OnlyFollowers       bool `json:"only_followers"`
-	OnlyMutualFollowers bool `json:"only_mutual_followers"`
-	OnlyMe              bool `json:"only_me"`
-}
-
-func (v *Visibility) count() int {
-	count := 0
-	switch true {
-	case v.Public:
-		count++
-	case v.OnlyFollowers:
-		count++
-	case v.OnlyMutualFollowers:
-		count++
-	case v.OnlyMe:
-		count++
-	}
-	return count
-}
-func (v *Visibility) isValid() bool {
-	return v.count() < 2
-}
-
 func (s *Service) Edit(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
 	userID := r.Context().Value("userID").(int)
