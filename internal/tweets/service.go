@@ -63,18 +63,3 @@ func (v *Visibility) isValid() bool {
 func (v *Visibility) defaultVisibilities() bool {
 	return v.count() == 0
 }
-
-//func (v *Visibility) defaultVisibilities(tweet *Tweet) {
-//	if tweet.Visibility.Public == nil {
-//		tweet.Public = &defaultPublic
-//	}
-//	if tweet.OnlyFollowers == nil {
-//		tweet.OnlyFollowers = &defaultOnlyFollowers
-//	}
-//	if tweet.OnlyMutualFollowers == nil {
-//		tweet.OnlyMutualFollowers = &defaultOnlyMutualFollowers
-//	}
-//	if tweet.OnlyMe == nil {
-//		tweet.OnlyMe = &defaultOnlyMe
-//	}
-//}
