@@ -59,7 +59,7 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 	return
 }
 func (s createTweetRequest) validateText(fl validator.FieldLevel) bool {
-	return len(fl.Field().String()) > maxLengthTweet
+	return len(fl.Field().String()) < maxLengthTweet
 }
 
 func (s createTweetRequest) validate() error {

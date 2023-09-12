@@ -2,17 +2,27 @@ package tweets
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_createTweetRequest_validate(t *testing.T) {
-	r := createTweetRequest{
-		Text: "gfgfgfgf",
-	}
+	t.Run("text_ok", func(t *testing.T) {
+		r := createTweetRequest{
+			Text: "text ok",
+		}
+		if err := r.validate(); err != nil {
+			t.Errorf("excpt: err==nil, got:%s", err)
+		}
 
-	err := r.validate()
+	})
+	t.Run("text_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createTweetRequest.Text' Error:Field validation for 'Text' failed on the 'text' tag"
+		r := createTweetRequest{
+			Text: "text vmropbmrpobmrtopbmtpomboptmbpotmboptmpobmtpobmptombpotmbpomtpobmtpombpotmbpomtpobmspotmboptmbpot,rgpa,mbpomtbapomtbpmtbopsmtbpomtpobmtpombpotmbopaalrgmaoprbmoptmbnportsnmbpoisnrmt[pbonsmtpo[bnmspotinbmsiotnbmsintbopisnmbiookdfsefrlkngklrglrmepaomtrpobmpondgsgastkgjnstrlkhjoirwhjoistjrhgoi'sjtoi'nbsoitnboisntbionatoigbnstoinboistnboisntboinstoibnsoitnboistnboisntobinsoitbnoistnboinboistnboisntoibnsoirtbnosirntb[santdfgaerngaioenroinaeroibnorinboaienboisnrboianrobinreoibnoitnb[po",
+		}
+		err := r.validate()
+		if err.Error() != expectedErrorSubstring {
+			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
+		}
 
-	assert.Error(t, err)
-	t.Log(err.Error())
+	})
 }
