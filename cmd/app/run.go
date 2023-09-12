@@ -8,7 +8,6 @@ import (
 	"Twitter_like_application/internal/admin"
 	"Twitter_like_application/internal/database/pg"
 	"Twitter_like_application/internal/server"
-	"Twitter_like_application/internal/services"
 	"Twitter_like_application/internal/tweets"
 	"Twitter_like_application/internal/users"
 	"Twitter_like_application/migrations"
@@ -37,12 +36,8 @@ func Run() error {
 	} else {
 		fmt.Println(migrationGoodMsg)
 	}
-	validator, err := services.New()
-	if err != nil {
-		return err
-	}
 	fmt.Println("validation is running")
-	if err = server.Server(*c, *u, *t, *a, *validator); err != nil {
+	if err = server.Server(*c, *u, *t, *a); err != nil {
 		return err
 	}
 	return nil

@@ -8,14 +8,13 @@ import (
 
 	"Twitter_like_application/config"
 	"Twitter_like_application/internal/admin"
-	"Twitter_like_application/internal/services"
 	tweets "Twitter_like_application/internal/tweets"
 	"Twitter_like_application/internal/users"
 
 	"github.com/gorilla/mux"
 )
 
-func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service, validator services.Services) error {
+func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service) error {
 	r := mux.NewRouter()
 	fmt.Printf("starting server on %s:%s\n", c.ServerHost, c.ServerPort)
 	r.Use(LoggingMiddleware)
@@ -42,17 +41,17 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service,
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/edit", func(w http.ResponseWriter, r *http.Request) {
 		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			s.EditProfile(w, r, validator)
+			s.EditProfile(w, r)
 		})).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/create", func(w http.ResponseWriter, r *http.Request) {
 		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			t.Create(w, r, validator)
+			t.Create(w, r)
 		})).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/tweets/{id_tweet", func(w http.ResponseWriter, r *http.Request) {
 		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			t.Edit(w, r, validator)
+			t.Edit(w, r)
 		})).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/{id_tweet}/retweet", func(w http.ResponseWriter, r *http.Request) {

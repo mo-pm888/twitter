@@ -146,16 +146,7 @@ func ReturnErr(w http.ResponseWriter, err interface{}, code int) {
 		return
 	}
 }
-func CheckEmail(w http.ResponseWriter, email string) {
-	if !emailRegex.MatchString(email) {
-		ReturnErr(w, "Invalid email format", http.StatusBadRequest)
-		return
-	}
-	if len(email) > 320 {
-		ReturnErr(w, "Name exceeds maximum length", http.StatusBadRequest)
-		return
-	}
-}
+
 func ReturnJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)

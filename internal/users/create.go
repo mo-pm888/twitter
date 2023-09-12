@@ -30,13 +30,14 @@ type User struct {
 }
 
 type createUserRequest struct {
+	ID        int    `json:"id"`
 	Name      string `json:"name" validate:"required,max=100,checkName"`
 	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"password" validate:"required,min=8,max=100,checkPassword"`
-	BirthDate string `json:"birthdate" validate:"required	,checkDate"`
-	Nickname  string `json:"nickname" validate:"omitempty,checkNickname"`
-	Bio       string `json:"bio" validate:"omitempty,checkBio"`
-	Location  string `json:"location" validate:"omitempty,checkLocation"`
+	Password  string `json:"password" validate:"required,min=8,max=100,hasUpper,hasSpecialChar,hasSequence,hasCommonWord,hasDigit"`
+	BirthDate string `json:"birthdate" validate:"required,date,dateAfter"`
+	Nickname  string `json:"nickname" validate:"omitempty,nickName"`
+	Bio       string `json:"bio" validate:"omitempty,bio"`
+	Location  string `json:"location" validate:"omitempty,location"`
 }
 
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +47,7 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err := req.validate(); err != nil {
+	if err = req.validate(); err != nil {
 		services.ReturnErr(w, err, http.StatusBadRequest)
 		return
 	}
@@ -99,7 +100,34 @@ func (s createUserRequest) validate() error {
 	if err := v.RegisterValidation("email", s.validateEmail); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasUpper", services.CheckPassword); err != nil {
+	if err := v.RegisterValidation("hasUpper", services.HasUpper); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasSpecialChar", services.HasSpecialChar); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasSequence", services.HasNoSequence); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasCommonWord", services.HasCommonWord); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasDigit", services.HasDigit); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("date", services.CheckDate); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("dateAfter", services.CheckDateAfter); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("nickName", services.CheckNickName); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("bio", services.CheckBio); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("location", services.CheckLocation); err != nil {
 		return err
 	}
 	return v.Struct(s)

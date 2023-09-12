@@ -10,9 +10,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type EditTweetRequest struct {
-	Text string `json:"text" validate:"required,checkTweetText"`
+type editTweetRequest struct {
+	Text string `json:"text" validate:"required,text"`
 	Visibility
+	createTweetRequest
 }
 
 type Visibility struct {
@@ -40,21 +41,21 @@ func (v *Visibility) isValid() bool {
 	return v.count() < 2
 }
 
-func (s *Service) Edit(w http.ResponseWriter, r *http.Request, validator services.Services) {
+func (s *Service) Edit(w http.ResponseWriter, r *http.Request) {
 	tweetID := mux.Vars(r)["id_tweet"]
 	userID := r.Context().Value("userID").(int)
-	var request EditTweetRequest
+	var req editTweetRequest
 	var tweet Tweet
-	err := json.NewDecoder(r.Body).Decode(&request)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err = validator.Validate.Struct(request); err != nil {
-		services.ReturnErr(w, validator.ValidErr, http.StatusBadRequest)
+	if err := req.validate(); err != nil {
+		services.ReturnErr(w, err, http.StatusBadRequest)
 		return
 	}
-	if !request.isValid() {
+	if !req.isValid() {
 		services.ReturnErr(w, "There must be only one visibility parameter", http.StatusInternalServerError)
 		return
 	}
@@ -73,13 +74,13 @@ func (s *Service) Edit(w http.ResponseWriter, r *http.Request, validator service
 		return
 	}
 	var visibility Visibility
-	if request.count() == 0 {
+	if req.count() == 0 {
 		visibility = tweet.Visibility
 	} else {
-		visibility = request.Visibility
+		visibility = req.Visibility
 	}
 	query = "UPDATE tweets SET text = $1, public = $2, only_followers = $3, only_mutual_followers = $4, only_me = $5 WHERE tweet_id = $6"
-	_, err = s.DB.ExecContext(r.Context(), query, request.Text, visibility.Public, visibility.OnlyFollowers, visibility.OnlyMutualFollowers, visibility.OnlyMe, tweetID)
+	_, err = s.DB.ExecContext(r.Context(), query, req.Text, visibility.Public, visibility.OnlyFollowers, visibility.OnlyMutualFollowers, visibility.OnlyMe, tweetID)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return

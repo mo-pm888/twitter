@@ -2,19 +2,116 @@ package users
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_createUserRequest_validate(t *testing.T) {
-	r := createUserRequest{
-		Name:     "!!!",
-		Email:    "asdasd",
-		Password: "asdasdfasdfsadfas",
-	}
+	t.Run("valid", func(t *testing.T) {
+		r := createUserRequest{
+			Name:      "kli",
+			Email:     "asdasd@mail.ru",
+			BirthDate: "1987-12-07",
+			Password:  "dgfghheeeDF1@",
+		}
 
-	err := r.validate()
+		if err := r.validate(); err != nil {
+			t.Errorf("expect: err==nil, got: %s", err)
+		}
+	})
+	t.Run("name_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createUserRequest.Name' Error:Field validation for 'Name' failed on the 'checkName' tag"
+		r := createUserRequest{
+			Name:      "111",
+			Email:     "asdasd@mail.ru",
+			BirthDate: "1987-12-07",
+			Password:  "dgfghheeeDF1@",
+		}
+		err := r.validate()
+		if err.Error() != expectedErrorSubstring {
+			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
+		}
+	})
+	t.Run("email_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createUserRequest.Email' Error:Field validation for 'Email' failed on the 'email' tag"
+		r := createUserRequest{
+			Name:      "kli",
+			Email:     "asdasd3",
+			BirthDate: "1987-12-07",
+			Password:  "dgfghheeeDF1@",
+		}
 
-	assert.Error(t, err)
-	t.Log(err.Error())
+		err := r.validate()
+		if err.Error() != expectedErrorSubstring {
+			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
+		}
+	})
+	t.Run("birthDate_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createUserRequest.BirthDate' Error:Field validation for 'BirthDate' failed on the 'date' tag"
+		r := createUserRequest{
+			Name:      "kli",
+			Email:     "asdasd@mail.ru",
+			BirthDate: "1987-12-07f",
+			Password:  "dgfghheeeDF1@",
+		}
+
+		err := r.validate()
+		if err.Error() != expectedErrorSubstring {
+			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
+		}
+	})
+	t.Run("password_hasUpper_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createUserRequest.Password' Error:Field validation for 'Password' failed on the 'hasUpper' tag"
+		r := createUserRequest{
+			Name:      "kli",
+			Email:     "asdasd@mail.ru",
+			BirthDate: "1987-12-07",
+			Password:  "dfdsfsfsf12!",
+		}
+
+		err := r.validate()
+		if err.Error() != expectedErrorSubstring {
+			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
+		}
+	})
+	t.Run("password_hasSpecialChar_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createUserRequest.Password' Error:Field validation for 'Password' failed on the 'hasSpecialChar' tag"
+		r := createUserRequest{
+			Name:      "kli",
+			Email:     "asdasd@mail.ru",
+			BirthDate: "1987-12-07",
+			Password:  "dfdsfsfsfF12",
+		}
+
+		err := r.validate()
+		if err.Error() != expectedErrorSubstring {
+			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
+		}
+	})
+	t.Run("password_hasDigit_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createUserRequest.Password' Error:Field validation for 'Password' failed on the 'hasDigit' tag"
+		r := createUserRequest{
+			Name:      "kli",
+			Email:     "asdasd@mail.ru",
+			BirthDate: "1987-12-07",
+			Password:  "dfdsfsfsfF!",
+		}
+
+		err := r.validate()
+		if err.Error() != expectedErrorSubstring {
+			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
+		}
+	})
+	t.Run("password_hasSequence_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createUserRequest.Password' Error:Field validation for 'Password' failed on the 'hasSequence' tag"
+		r := createUserRequest{
+			Name:      "kli",
+			Email:     "asdasd@mail.ru",
+			BirthDate: "1987-12-07",
+			Password:  "dfdsfsfsfF!123",
+		}
+
+		err := r.validate()
+		if err.Error() != expectedErrorSubstring {
+			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
+		}
+	})
 }
