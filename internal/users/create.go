@@ -34,9 +34,9 @@ type createUserRequest struct {
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=8,max=100,hasUpper,hasSpecialChar,hasSequence,hasCommonWord,hasDigit"`
 	BirthDate string `json:"birthdate" validate:"required,date,dateAfter"`
-	Nickname  string `json:"nickname" validate:"omitempty,nickName"`
-	Bio       string `json:"bio" validate:"omitempty,max=400,bio"`
-	Location  string `json:"location" validate:"omitempty,max=400location"`
+	Nickname  string `json:"nickname" validate:"omitempty"`
+	Bio       string `json:"bio" validate:"omitempty,max=400"`
+	Location  string `json:"location" validate:"omitempty,max=400"`
 }
 
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {

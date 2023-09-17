@@ -152,7 +152,7 @@ func Test_createUserRequest_validate(t *testing.T) {
 		}
 	})
 	t.Run("bio_fail", func(t *testing.T) {
-		expectedErrorSubstring := "Key: 'createUserRequest.Bio' Error:Field validation for 'Bio' failed on the 'bio' tag"
+		expectedErrorSubstring := "Key: 'createUserRequest.Bio' Error:Field validation for 'Bio' failed on the 'max' tag"
 		r := createUserRequest{
 			Name:      "kli",
 			Email:     "asdasd@mail.ru",
@@ -179,8 +179,8 @@ func Test_createUserRequest_validate(t *testing.T) {
 			t.Errorf("expect: err==nil, got: %s", err)
 		}
 	})
-	t.Run("location_ok", func(t *testing.T) {
-		expectedErrorSubstring := "Key: 'createUserRequest.Location' Error:Field validation for 'Location' failed on the 'location' tag"
+	t.Run("location_fail", func(t *testing.T) {
+		expectedErrorSubstring := "Key: 'createUserRequest.Location' Error:Field validation for 'Location' failed on the 'max' tag"
 		r := createUserRequest{
 			Name:      "kli",
 			Email:     "asdasd@mail.ru",
@@ -193,6 +193,7 @@ func Test_createUserRequest_validate(t *testing.T) {
 		if err.Error() != expectedErrorSubstring {
 			t.Errorf("Expected error message: %s, Actual error message: %s", expectedErrorSubstring, err.Error())
 		}
+
 	})
 
 }
