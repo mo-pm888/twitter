@@ -1,7 +1,10 @@
 package tweets
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -9,6 +12,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 )
+
 
 const maxLengthTweet = 400
 
@@ -20,6 +24,17 @@ type CreatNewTweet struct {
 	OnlyFollowers       bool `json:"only_followers"`
 	OnlyMutualFollowers bool `json:"only_mutual_followers"`
 	OnlyMe              bool `json:"only_me"`
+
+func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
+	var newTweet Tweet
+	err := json.NewDecoder(r.Body).Decode(&newTweet)
+	if err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err = s.CreateNewTweet(&newTweet, r.Context(), 0); err != nil {
+		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 type createTweetRequest struct {
 	ID        int    `json:"id"`
@@ -52,7 +67,6 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(req)
 
-	return
 }
 
 func (s createTweetRequest) validateText(fl validator.FieldLevel) bool {
