@@ -19,9 +19,7 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service)
 	fmt.Printf("starting server on %s:%s\n", c.ServerHost, c.ServerPort)
 	r.Use(LoggingMiddleware)
 	r.Use(CorsMiddleware)
-	r.HandleFunc("/v1/users/create", func(w http.ResponseWriter, r *http.Request) {
-		s.Create(w, r)
-	}).Methods(http.MethodPost)
+	r.HandleFunc("/v1/users/create", s.Create).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/login", s.LogIn).Methods(http.MethodPost)
 	//http.Handle("/v1/users/logout", users.AuthHandler(http.HandlerFunc(s.LogOut)))
 	r.HandleFunc("/v1/users/", func(w http.ResponseWriter, r *http.Request) {
@@ -40,19 +38,13 @@ func Server(c config.Config, s users.Service, t tweets.Service, a admin.Service)
 		s.AuthHandler(http.HandlerFunc(s.Unfollow)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
 	r.HandleFunc("/v1/users/edit", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			s.EditProfile(w, r)
-		})).ServeHTTP(w, r)
+		s.AuthHandler(http.HandlerFunc(s.EditProfile)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/create", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			t.Create(w, r)
-		})).ServeHTTP(w, r)
+		s.AuthHandler(http.HandlerFunc(t.Create)).ServeHTTP(w, r)
 	}).Methods(http.MethodPost)
-	r.HandleFunc("/v1/tweets/{id_tweet", func(w http.ResponseWriter, r *http.Request) {
-		s.AuthHandler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			t.Edit(w, r)
-		})).ServeHTTP(w, r)
+	r.HandleFunc("/v1/tweets/{id_tweet}", func(w http.ResponseWriter, r *http.Request) {
+		s.AuthHandler(http.HandlerFunc(t.Edit)).ServeHTTP(w, r)
 	}).Methods(http.MethodPatch)
 	r.HandleFunc("/v1/tweets/{id_tweet}/retweet", func(w http.ResponseWriter, r *http.Request) {
 		s.AuthHandler(http.HandlerFunc(t.Retweet)).ServeHTTP(w, r)

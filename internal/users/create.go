@@ -16,21 +16,20 @@ import (
 
 type User struct {
 	ID                 int
-	Name               string `json:"name" validate:"omitempty,checkName"`
-	Password           string `json:"password" validate:"omitempty,hasSpecialChars,hasDigits,"`
-	Email              string `json:"email" validate:"omitempty,email"`
+	Name               string `json:"name"`
+	Password           string `json:"password"`
+	Email              string `json:"email"`
 	EmailToken         string
 	ConfirmEmailToken  bool
 	ResetPasswordToken string
-	BirthDate          string `json:"birthdate" validate:"omitempty,checkDate"`
-	Nickname           string `json:"nickname" validate:"omitempty,checkNickname"`
-	Bio                string `json:"bio" validate:"omitempty,checkBio"`
-	Location           string `json:"location" validate:"omitempty,checkLocation"`
+	BirthDate          string `json:"birthdate"`
+	Nickname           string `json:"nickname"`
+	Bio                string `json:"bio"`
+	Location           string `json:"location"`
 	Tweets.Tweet
 }
 
 type createUserRequest struct {
-	ID        int    `json:"id"`
 	Name      string `json:"name" validate:"required,max=100,checkName"`
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=8,max=100,hasUpper,hasSpecialChar,hasSequence,hasCommonWord,hasDigit"`
@@ -67,8 +66,8 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.Password = string(hashedPassword)
-	query = `INSERT INTO users_tweeter (name, password, email, nickname, location, bio, birthdate) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
-	err = s.DB.QueryRow(query, req.Name, req.Password, req.Email, req.Nickname, req.Location, req.Bio, req.BirthDate).Scan(&req.ID)
+	query = `INSERT INTO users_tweeter (name, password, email, nickname, location, bio, birthdate) VALUES ($1, $2, $3, $4, $5, $6, $7)`
+	err = s.DB.QueryRow(query, req.Name, req.Password, req.Email, req.Nickname, req.Location, req.Bio, req.BirthDate).Err()
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			services.ReturnErr(w, "This user is already added", http.StatusBadRequest)
@@ -109,7 +108,7 @@ func (s createUserRequest) validate() error {
 	if err := v.RegisterValidation("hasSequence", services.HasNoSequence); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasCommonWord", services.HasCommonWord); err != nil {
+	if err := v.RegisterValidation("hasCommonWord", services.ContainsCommonWord); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("hasDigit", services.HasDigit); err != nil {
@@ -118,7 +117,7 @@ func (s createUserRequest) validate() error {
 	if err := v.RegisterValidation("date", services.CheckDate); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("dateAfter", services.CheckDateAfter); err != nil {
+	if err := v.RegisterValidation("dateAfter", services.DateNotAfter); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("nickName", services.CheckNickName); err != nil {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/mail"
 	"strconv"
 	"strings"
 
@@ -15,7 +16,13 @@ import (
 )
 
 type editUserRequest struct {
-	createUserRequest
+	Name      string `json:"name" validate:"omitempty,max=100,checkName"`
+	Email     string `json:"email" validate:"omitempty,email"`
+	Password  string `json:"password" validate:"omitempty,min=8,max=100,hasUpper,hasSpecialChar,hasSequence,hasCommonWord,hasDigit"`
+	BirthDate string `json:"birthdate" validate:"omitempty,date,dateAfter"`
+	Nickname  string `json:"nickname" validate:"omitempty,nickName"`
+	Bio       string `json:"bio" validate:"omitempty,bio"`
+	Location  string `json:"location" validate:"omitempty,location"`
 }
 
 func (s *Service) EditProfile(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +58,6 @@ func updateProfile(req *editUserRequest, userID int, s *sql.DB) error {
 	if req.Password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
-			fmt.Println(err)
 			return err
 		}
 		values = append(values, string(hashedPassword))
@@ -89,6 +95,14 @@ func updateProfile(req *editUserRequest, userID int, s *sql.DB) error {
 	}
 	return err
 }
+func (s editUserRequest) validateName(fl validator.FieldLevel) bool {
+	return services.NameRegex.MatchString(fl.Field().String())
+}
+
+func (s editUserRequest) validateEmail(fl validator.FieldLevel) bool {
+	_, err := mail.ParseAddress(fl.Field().String())
+	return err == nil
+}
 
 func (s editUserRequest) validate() error {
 	v := validator.New()
@@ -107,7 +121,7 @@ func (s editUserRequest) validate() error {
 	if err := v.RegisterValidation("hasSequence", services.HasNoSequence); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasCommonWord", services.HasCommonWord); err != nil {
+	if err := v.RegisterValidation("hasCommonWord", services.ContainsCommonWord); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("hasDigit", services.HasDigit); err != nil {
@@ -116,7 +130,7 @@ func (s editUserRequest) validate() error {
 	if err := v.RegisterValidation("date", services.CheckDate); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("dateAfter", services.CheckDateAfter); err != nil {
+	if err := v.RegisterValidation("dateAfter", services.DateNotAfter); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("nickName", services.CheckNickName); err != nil {

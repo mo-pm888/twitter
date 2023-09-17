@@ -36,7 +36,6 @@ func Run() error {
 	} else {
 		fmt.Println(migrationGoodMsg)
 	}
-	fmt.Println("validation is running")
 	if err = server.Server(*c, *u, *t, *a); err != nil {
 		return err
 	}

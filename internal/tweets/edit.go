@@ -10,11 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type editTweetRequest struct {
-	Text string `json:"text" validate:"required,text"`
-	Visibility
-	createTweetRequest
-}
+type editTweetRequest = createTweetRequest
 
 type Visibility struct {
 	Public              bool `json:"public"`

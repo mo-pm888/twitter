@@ -31,7 +31,7 @@ func HasDigit(fl validator.FieldLevel) bool {
 	return false
 }
 
-func HasCommonWord(fl validator.FieldLevel) bool {
+func ContainsCommonWord(fl validator.FieldLevel) bool {
 	for _, word := range commonWords {
 		if strings.Contains(fl.Field().String(), word) {
 			return false
@@ -71,7 +71,7 @@ func CheckDate(fl validator.FieldLevel) bool {
 	_, err := time.Parse("2006-01-02", fl.Field().String())
 	return err == nil
 }
-func CheckDateAfter(fl validator.FieldLevel) bool {
+func DateNotAfter(fl validator.FieldLevel) bool {
 	date, err := time.Parse("2006-01-02", fl.Field().String())
 	if err != nil {
 		return false
@@ -81,11 +81,11 @@ func CheckDateAfter(fl validator.FieldLevel) bool {
 }
 
 func CheckNickName(fl validator.FieldLevel) bool {
-	return len(fl.Field().String()) > maxNameLength
+	return len(fl.Field().String()) < maxNameLength
 }
 func CheckBio(fl validator.FieldLevel) bool {
-	return len(fl.Field().String()) > maxlengthBio
+	return len(fl.Field().String()) < maxlengthBio
 }
 func CheckLocation(fl validator.FieldLevel) bool {
-	return len(fl.Field().String()) > maxNameLength
+	return len(fl.Field().String()) < maxNameLength
 }

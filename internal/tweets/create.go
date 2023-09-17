@@ -21,15 +21,11 @@ type CreatNewTweet struct {
 	OnlyMutualFollowers bool `json:"only_mutual_followers"`
 	OnlyMe              bool `json:"only_me"`
 }
-
 type createTweetRequest struct {
-	ID                  int    `json:"id"`
-	Text                string `json:"text" validate:"required,text"`
-	CreatedAt           time.Time
-	Public              bool `json:"public"`
-	OnlyFollowers       bool `json:"only_followers"`
-	OnlyMutualFollowers bool `json:"only_mutual_followers"`
-	OnlyMe              bool `json:"only_me"`
+	ID        int    `json:"id"`
+	Text      string `json:"text" validate:"required,text,max="`
+	CreatedAt time.Time
+	Visibility
 }
 
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +54,7 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 
 	return
 }
+
 func (s createTweetRequest) validateText(fl validator.FieldLevel) bool {
 	return len(fl.Field().String()) < maxLengthTweet
 }
