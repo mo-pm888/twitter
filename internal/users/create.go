@@ -33,7 +33,7 @@ type createUserRequest struct {
 	Name      string `json:"name" validate:"required,max=100,checkName"`
 	Email     string `json:"email" validate:"required,email"`
 	Password  string `json:"password" validate:"required,min=8,max=100,hasUpper,hasSpecialChar,hasSequence,hasCommonWord,hasDigit"`
-	BirthDate string `json:"birthdate" validate:"required,date,dateAfter"`
+	BirthDate string `json:"birthdate" validate:"required,date,inThePast"`
 	Nickname  string `json:"nickname" validate:"omitempty"`
 	Bio       string `json:"bio" validate:"omitempty,max=400"`
 	Location  string `json:"location" validate:"omitempty,max=400"`
@@ -117,7 +117,7 @@ func (s createUserRequest) validate() error {
 	if err := v.RegisterValidation("date", services.CheckDate); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("dateAfter", services.DateNotAfter); err != nil {
+	if err := v.RegisterValidation("inThePast", services.InThePast); err != nil {
 		return err
 	}
 	return v.Struct(s)

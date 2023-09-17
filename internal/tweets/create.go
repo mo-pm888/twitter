@@ -15,7 +15,6 @@ import (
 const maxLengthTweet = 400
 
 type createTweetRequest struct {
-	ID        int    `json:"id"`
 	Text      string `json:"text" validate:"required,text"`
 	CreatedAt time.Time
 	Visibility

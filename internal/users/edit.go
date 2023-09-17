@@ -130,7 +130,7 @@ func (s editUserRequest) validate() error {
 	if err := v.RegisterValidation("date", services.CheckDate); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("dateAfter", services.DateNotAfter); err != nil {
+	if err := v.RegisterValidation("dateAfter", services.InThePast); err != nil {
 		return err
 	}
 	return v.Struct(s)

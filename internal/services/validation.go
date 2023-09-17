@@ -64,7 +64,7 @@ func CheckDate(fl validator.FieldLevel) bool {
 	_, err := time.Parse("2006-01-02", fl.Field().String())
 	return err == nil
 }
-func DateNotAfter(fl validator.FieldLevel) bool {
+func InThePast(fl validator.FieldLevel) bool {
 	date, err := time.Parse("2006-01-02", fl.Field().String())
 	if err != nil {
 		return false
