@@ -35,8 +35,8 @@ type createUserRequest struct {
 	Password  string `json:"password" validate:"required,min=8,max=100,hasUpper,hasSpecialChar,hasSequence,hasCommonWord,hasDigit"`
 	BirthDate string `json:"birthdate" validate:"required,date,dateAfter"`
 	Nickname  string `json:"nickname" validate:"omitempty,nickName"`
-	Bio       string `json:"bio" validate:"omitempty,bio"`
-	Location  string `json:"location" validate:"omitempty,location"`
+	Bio       string `json:"bio" validate:"omitempty,max=400,bio"`
+	Location  string `json:"location" validate:"omitempty,max=400location"`
 }
 
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
@@ -99,34 +99,25 @@ func (s createUserRequest) validate() error {
 	if err := v.RegisterValidation("email", s.validateEmail); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasUpper", services.HasUpper); err != nil {
+	if err := v.RegisterValidation("hasUpper", services.ContainsUpper); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasSpecialChar", services.HasSpecialChar); err != nil {
+	if err := v.RegisterValidation("hasSpecialChar", services.ContainsSpecialChar); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasSequence", services.HasNoSequence); err != nil {
+	if err := v.RegisterValidation("hasSequence", services.ContainsSequence); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("hasCommonWord", services.ContainsCommonWord); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasDigit", services.HasDigit); err != nil {
+	if err := v.RegisterValidation("hasDigit", services.ContainsDigit); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("date", services.CheckDate); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("dateAfter", services.DateNotAfter); err != nil {
-		return err
-	}
-	if err := v.RegisterValidation("nickName", services.CheckNickName); err != nil {
-		return err
-	}
-	if err := v.RegisterValidation("bio", services.CheckBio); err != nil {
-		return err
-	}
-	if err := v.RegisterValidation("location", services.CheckLocation); err != nil {
 		return err
 	}
 	return v.Struct(s)

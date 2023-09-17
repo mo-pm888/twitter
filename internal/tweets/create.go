@@ -12,18 +12,9 @@ import (
 
 const maxLengthTweet = 400
 
-type CreatNewTweet struct {
-	TweetID             int
-	Text                string `json:"text" validate:"required,checkTweetText"`
-	CreatedAt           time.Time
-	Public              bool `json:"public"`
-	OnlyFollowers       bool `json:"only_followers"`
-	OnlyMutualFollowers bool `json:"only_mutual_followers"`
-	OnlyMe              bool `json:"only_me"`
-}
 type createTweetRequest struct {
 	ID        int    `json:"id"`
-	Text      string `json:"text" validate:"required,text,max="`
+	Text      string `json:"text" validate:"required,text"`
 	CreatedAt time.Time
 	Visibility
 }

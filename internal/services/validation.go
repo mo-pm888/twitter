@@ -9,20 +9,13 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const (
-	maxNameLength  = 100
-	minNameLength  = 8
-	maxlengthBio   = 400
-	maxLenghtTweet = 400
-)
-
 var (
 	commonWords = []string{"password", "12345678", "87654321", "qwerty123"}
 	sequences   = []string{"123", "abc", "xyz"}
 	NameRegex   = regexp.MustCompile("^[\\p{L}\\s]+$")
 )
 
-func HasDigit(fl validator.FieldLevel) bool {
+func ContainsDigit(fl validator.FieldLevel) bool {
 	for _, char := range fl.Field().String() {
 		if unicode.IsDigit(char) {
 			return true
@@ -40,7 +33,7 @@ func ContainsCommonWord(fl validator.FieldLevel) bool {
 	return true
 }
 
-func HasNoSequence(fl validator.FieldLevel) bool {
+func ContainsSequence(fl validator.FieldLevel) bool {
 	for _, sequence := range sequences {
 		if strings.Contains(fl.Field().String(), sequence) {
 			return false
@@ -49,7 +42,7 @@ func HasNoSequence(fl validator.FieldLevel) bool {
 	return true
 }
 
-func HasUpper(fl validator.FieldLevel) bool {
+func ContainsUpper(fl validator.FieldLevel) bool {
 	for _, char := range fl.Field().String() {
 		if unicode.IsUpper(char) {
 			return true
@@ -58,7 +51,7 @@ func HasUpper(fl validator.FieldLevel) bool {
 	return false
 }
 
-func HasSpecialChar(fl validator.FieldLevel) bool {
+func ContainsSpecialChar(fl validator.FieldLevel) bool {
 	for _, char := range fl.Field().String() {
 		if !unicode.IsLetter(char) && !unicode.IsNumber(char) {
 			return true
@@ -78,14 +71,4 @@ func DateNotAfter(fl validator.FieldLevel) bool {
 	}
 	currentDate := time.Now()
 	return !date.After(currentDate)
-}
-
-func CheckNickName(fl validator.FieldLevel) bool {
-	return len(fl.Field().String()) < maxNameLength
-}
-func CheckBio(fl validator.FieldLevel) bool {
-	return len(fl.Field().String()) < maxlengthBio
-}
-func CheckLocation(fl validator.FieldLevel) bool {
-	return len(fl.Field().String()) < maxNameLength
 }

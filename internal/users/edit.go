@@ -112,34 +112,25 @@ func (s editUserRequest) validate() error {
 	if err := v.RegisterValidation("email", s.validateEmail); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasUpper", services.HasUpper); err != nil {
+	if err := v.RegisterValidation("hasUpper", services.ContainsUpper); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasSpecialChar", services.HasSpecialChar); err != nil {
+	if err := v.RegisterValidation("hasSpecialChar", services.ContainsSpecialChar); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasSequence", services.HasNoSequence); err != nil {
+	if err := v.RegisterValidation("hasSequence", services.ContainsSequence); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("hasCommonWord", services.ContainsCommonWord); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasDigit", services.HasDigit); err != nil {
+	if err := v.RegisterValidation("hasDigit", services.ContainsDigit); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("date", services.CheckDate); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("dateAfter", services.DateNotAfter); err != nil {
-		return err
-	}
-	if err := v.RegisterValidation("nickName", services.CheckNickName); err != nil {
-		return err
-	}
-	if err := v.RegisterValidation("bio", services.CheckBio); err != nil {
-		return err
-	}
-	if err := v.RegisterValidation("location", services.CheckLocation); err != nil {
 		return err
 	}
 	return v.Struct(s)
