@@ -139,12 +139,10 @@ func ReturnErr(w http.ResponseWriter, err interface{}, code int) {
 		errj.Errtext = v
 	case error:
 		errj.Errtext = v.Error()
-	default:
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.WriteHeader(code)
-		json.NewEncoder(w).Encode(err)
-		return
 	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(errj)
 }
 
 func ReturnJSON(w http.ResponseWriter, statusCode int, data interface{}) {
