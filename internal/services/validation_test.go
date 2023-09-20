@@ -220,34 +220,28 @@ func TestContainsSpecialChar(t *testing.T) {
 }
 
 func TestContainsUpper(t *testing.T) {
-	v := validator.New()
-
-	if err := v.RegisterValidation("hasUpper", ContainsUpper); err != nil {
-		t.Error(err)
-	}
-
 	tests := []struct {
 		name string
-		data TestUpperStruct
+		val  string
 		want bool
 	}{
-		{
-			name: "Contains upper ok",
-			data: TestUpperStruct{UpperPassword: "kff32!fdgggF"},
-			want: true,
-		},
-		{
-			name: "Contains upper fail",
-			data: TestUpperStruct{UpperPassword: "kff32!fdgggf"},
-			want: false,
-		},
+		{"valid", "A", true},
+		{"invalid", "a", false},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := v.Struct(tt.data); (err == nil) != tt.want {
-				t.Errorf("InThePast() = %v, want %v", (err == nil), tt.want)
+			if got := ContainsUpper(testField{v: tt.val}); got != tt.want {
+				t.Errorf("ContainsUpper() = %v, want %v", got, tt.want)
 			}
 		})
 	}
+}
+
+type testField struct {
+	v string
+	validator.FieldLevel
+}
+
+func (t testField) Field() reflect.Value {
+	return reflect.ValueOf(t.v)
 }
