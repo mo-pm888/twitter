@@ -1,6 +1,7 @@
 package services
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/go-playground/validator/v10"
@@ -20,9 +21,6 @@ type TestSequenceStruct struct {
 }
 type TestSpecialCharStruct struct {
 	SpecialCharPassword string `validate:"hasSpecialChar"`
-}
-type TestUpperStruct struct {
-	UpperPassword string `validate:"hasUpper"`
 }
 
 func TestInThePast(t *testing.T) {
