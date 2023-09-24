@@ -132,14 +132,9 @@ func ExtractUserIDFromSessionCookie(cookieValue string) (string, error) {
 //		}
 //		return count, nil
 //	}
-func ReturnErr(w http.ResponseWriter, err interface{}, code int) {
+func ReturnErr(w http.ResponseWriter, err string, code int) {
 	var errj ErrResponse
-	switch v := err.(type) {
-	case string:
-		errj.Errtext = v
-	case error:
-		errj.Errtext = v.Error()
-	}
+	errj.Errtext = err
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errj)

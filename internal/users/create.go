@@ -47,7 +47,7 @@ func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = req.validate(); err != nil {
-		services.ReturnErr(w, err, http.StatusBadRequest)
+		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	query := `SELECT id FROM users_tweeter WHERE email = $1`

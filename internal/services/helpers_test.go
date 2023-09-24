@@ -10,10 +10,11 @@ import (
 func TestReturnErr(t *testing.T) {
 	type args struct {
 		w    http.ResponseWriter
-		err  interface{}
+		err  string
 		code int
 	}
-
+	err := errors.New("sample error")
+	errString := err.Error()
 	tests := []struct {
 		name         string
 		args         args
@@ -23,20 +24,20 @@ func TestReturnErr(t *testing.T) {
 			name: "Test with string error",
 			args: args{
 				w:    httptest.NewRecorder(),
-				err:  "Sample error message",
+				err:  "sample error message",
 				code: http.StatusInternalServerError,
 			},
-			expectedJSON: `{"errtext":"Sample error message"}
+			expectedJSON: `{"errtext":"sample error message"}
 `,
 		},
 		{
 			name: "Test with error",
 			args: args{
 				w:    httptest.NewRecorder(),
-				err:  errors.New("Sample error"),
+				err:  errString,
 				code: http.StatusBadRequest,
 			},
-			expectedJSON: `{"errtext":"Sample error"}
+			expectedJSON: `{"errtext":"sample error"}
 `,
 		},
 		{
