@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -13,45 +12,61 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+const maxLengthTweet = 400
+
+type createTweetRequest struct {
+	Text string `json:"text" validate:"required,text"`
+	Visibility
+}
+
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
-	var newTweet Tweet
-	err := json.NewDecoder(r.Body).Decode(&newTweet)
+	req := createTweetRequest{}
+	userID := r.Context().Value("userID").(int)
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if err = s.CreateNewTweet(&newTweet, r.Context(), 0); err != nil {
+	if err = s.CreateNewTweet(req, r.Context(), userID); err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
-	services.ReturnJSON(w, http.StatusCreated, newTweet)
-}
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(req)
 
-func (s *Service) CreateNewTweet(tweet *Tweet, ctx context.Context, parentID int) error {
-	tweetValid := &TweetValid{
-		Validate: validator.New(),
-		ValidErr: make(map[string]string),
-	}
-	if err := RegisterTweetValidations(tweetValid); err != nil {
-		fmt.Println(err)
-	}
-	if err := tweetValid.Validate.Struct(tweet); err != nil {
+	return
+}
+func (s *Service) CreateNewTweet(req createTweetRequest, ctx context.Context, parentID int) error {
+	if err := req.validate(); err != nil {
 		return err
 	}
 	userID := ctx.Value("userID").(int)
-	if !tweet.isValid() {
+	if !req.isValid() {
 		return errors.New("visibility error, many visual arguments")
 	}
-	if tweet.defaultVisibilities() {
-		tweet.Visibility.Public = true
-		tweet.Visibility.OnlyMe = false
-		tweet.Visibility.OnlyFollowers = false
-		tweet.Visibility.OnlyMutualFollowers = false
+	if req.defaultVisibilities() {
+		req.Visibility.Public = true
+		req.Visibility.OnlyMe = false
+		req.Visibility.OnlyFollowers = false
+		req.Visibility.OnlyMutualFollowers = false
 	}
 	query := `INSERT INTO tweets (user_id, text, created_at,parent_tweet_id, public, only_followers, only_mutual_followers, only_me)
-		VALUES ($1, $2, $3, $4, $5, $6, $7,$8) RETURNING tweet_id`
-	if err := s.DB.QueryRowContext(ctx, query, userID, tweet.Text, time.Now(), parentID, tweet.Public, tweet.OnlyFollowers, tweet.OnlyMutualFollowers, tweet.OnlyMe).Scan(&tweet.TweetID); err != nil {
+		VALUES ($1, $2, $3, $4, $5, $6, $7,$8)`
+	if err := s.DB.QueryRowContext(ctx, query, userID, req.Text, time.Now(), parentID, req.Public, req.OnlyFollowers, req.OnlyMutualFollowers, req.OnlyMe).Err(); err != nil {
 		return err
 	}
 	return nil
 
+}
+
+func (s createTweetRequest) validateText(fl validator.FieldLevel) bool {
+	return len(fl.Field().String()) < maxLengthTweet
+}
+
+func (s createTweetRequest) validate() error {
+	v := validator.New()
+	if err := v.RegisterValidation("text", s.validateText); err != nil {
+		return err
+	}
+	return v.Struct(s)
 }

@@ -10,36 +10,14 @@ import (
 	"net/http"
 	"net/smtp"
 	"net/url"
-	"strings"
 
 	"Twitter_like_application/internal/services"
-
-	"github.com/go-playground/validator/v10"
 )
 
 const (
 	ctxKeyUserID  = "userID"
 	ctxKeyIsAdmin = "isAdmin"
 )
-
-type UserValid struct {
-	validate *validator.Validate
-	validErr map[string]string
-}
-type NameVal struct {
-	short    bool
-	long     bool
-	realName bool
-}
-
-func (v *UserValid) Error() string {
-	var pairs []string
-	for k, v := range v.validErr {
-		pairs = append(pairs, fmt.Sprintf("%s: %s", k, v))
-	}
-
-	return strings.Join(pairs, "; ")
-}
 
 func checkAuth(w http.ResponseWriter, r *http.Request, s *sql.DB) *http.Request {
 	apikey := r.Header.Get("X-API-KEY")
@@ -142,78 +120,6 @@ func ResetPasswordPlusEmail(user *User) {
 	return
 }
 
-//func GetFollowers(w http.ResponseWriter, r *http.Request) {
-//	userID := r.FormValue("user_id")
-//	if userID == "" {
-//		http.Error(w, "Missing user ID", http.StatusBadRequest)
-//		return
-//	}
-//
-//	query := "SELECT u.id, u.username FROM users u INNER JOIN subscriptions s ON u.id = s.follower_id WHERE s.followee_id = $1"
-//	rows, err := pg.DB.Query(query, userID)
-//	if err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//	defer rows.Close()
-//
-//	var followers []User
-//
-//	for rows.Next() {
-//		var follower User
-//		err := rows.Scan(&follower.UserID, &follower.Name)
-//		if err != nil {
-//			http.Error(w, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-//		followers = append(followers, follower)
-//	}
-//
-//	if err := rows.Err(); err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//
-//	w.Header().Set("Content-Type", "application/json")
-//	json.NewEncoder(w).Encode(followers)
-//}
-
-//func GetFollowing(w http.ResponseWriter, r *http.Request) {
-//	userID := r.FormValue("user_id")
-//	if userID == "" {
-//		http.Error(w, "Missing user ID", http.StatusBadRequest)
-//		return
-//	}
-//
-//	query := "SELECT u.id, u.username FROM users u INNER JOIN subscriptions s ON u.id = s.followee_id WHERE s.follower_id = $1"
-//	rows, err := pg.DB.Query(query, userID)
-//	if err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//	defer rows.Close()
-//
-//	var following []User
-//
-//	for rows.Next() {
-//		var followee User
-//		err := rows.Scan(&followee.UserID, &followee.Name)
-//		if err != nil {
-//			http.Error(w, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-//		following = append(following, followee)
-//	}
-//
-//	if err := rows.Err(); err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//
-//	w.Header().Set("Content-Type", "application/json")
-//	json.NewEncoder(w).Encode(following)
-//}
-
 func (s *Service) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	if query == "" {
@@ -252,31 +158,7 @@ func (s *Service) SearchUsers(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-//	func GetStatistics(w http.ResponseWriter, r *http.Request) {
-//		userCount, err := services.GetUserCount()
-//		if err != nil {
-//			http.Error(w, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-//
-//		tweetCount, err := services.GetTweetCount()
-//		if err != nil {
-//			http.Error(w, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-//
-//		statistics := struct {
-//			UserCount  int `json:"user_count"`
-//			TweetCount int `json:"tweet_count"`
-//		}{
-//			UserCount:  userCount,
-//			TweetCount: tweetCount,
-//		}
-//
-//		w.Header().Set("Content-Type", "application/json")
-//		json.NewEncoder(w).Encode(statistics)
-//	}
-func CheckEmail(newUser *User) string {
+func EmailVerificationToken(email string) string {
 	token := make([]byte, 32)
 	_, err := rand.Read(token)
 	if err != nil {
@@ -292,13 +174,12 @@ func CheckEmail(newUser *User) string {
 			"token": {confirmToken},
 		}.Encode(),
 	}
-	to := newUser.Email
 	subject := "Confirment your email"
 	body := fmt.Sprintf("Confirment email: click this link:\n%s", confirmURL.String())
 
 	auth := smtp.PlainAuth("", "your email", "password", "your site/token")
 
-	err = smtp.SendMail("your email:587", auth, "your site/token", []string{to}, []byte(fmt.Sprintf("Subject: %s\n\n%s", subject, body)))
+	err = smtp.SendMail("your email:587", auth, "your site/token", []string{email}, []byte(fmt.Sprintf("Subject: %s\n\n%s", subject, body)))
 	if err != nil {
 		return ""
 	}
@@ -306,37 +187,6 @@ func CheckEmail(newUser *User) string {
 	return confirmToken
 }
 
-//	func GetUserProfile(w http.ResponseWriter, r *http.Request) {
-//		vars := mux.Vars(r)
-//		userID := vars["id"]
-//
-//		query := "SELECT id, name, bio FROM users_tweeter WHERE id = $1"
-//		var user User
-//		err := pg.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Bio)
-//		if err != nil {
-//			http.Error(w, err.Error(), http.StatusInternalServerError)
-//			return
-//		}
-//
-//		response := struct {
-//			Name     string `json:"name"`
-//			Email    string `json:"email"`
-//			Birthday string `json:"birthday"`
-//			NickName string `json:"nickName"`
-//			Bio      string `json:"bio"`
-//			Location string `json:"location"`
-//		}{
-//			Name:     user.Name,
-//			Email:    user.Email,
-//			Birthday: user.BirthDate,
-//			NickName: user.Nickname,
-//			Bio:      user.Bio,
-//			Location: user.Location,
-//		}
-//
-//		w.Header().Set("Content-Type", "application/json")
-//		json.NewEncoder(w).Encode(response)
-//	}
 func DeleteUserSession(token string, s *sql.DB) error {
 	query := "DELETE FROM user_session WHERE login_token = $1"
 	_, err := s.Exec(query, token)
@@ -344,51 +194,5 @@ func DeleteUserSession(token string, s *sql.DB) error {
 		return err
 	}
 
-	return nil
-}
-func RegisterUsersValidations(userValid *UserValid) error {
-	err := userValid.validate.RegisterValidation("checkPassword", func(fl validator.FieldLevel) bool {
-		return CheckPassword(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("checkName", func(fl validator.FieldLevel) bool {
-		return CheckName(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-
-	err = userValid.validate.RegisterValidation("checkDate", func(fl validator.FieldLevel) bool {
-		return CheckDate(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("checkNickname", func(fl validator.FieldLevel) bool {
-		return CheckNickName(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("checkBio", func(fl validator.FieldLevel) bool {
-		return CheckBio(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("checkLocation", func(fl validator.FieldLevel) bool {
-		return CheckLocation(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
-	err = userValid.validate.RegisterValidation("email", func(fl validator.FieldLevel) bool {
-		return CheckEmailVal(fl, userValid)
-	})
-	if err != nil {
-		return err
-	}
 	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/mail"
 	"strconv"
 	"strings"
 
@@ -14,34 +15,25 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type EditUserRequest struct {
-	ID        int    `json:"-"`
-	Name      string `json:"name" validate:"omitempty,checkName"`
-	Password  string `json:"password" validate:"omitempty,checkPassword"`
+type editUserRequest struct {
+	Name      string `json:"name" validate:"omitempty,max=100,checkName"`
 	Email     string `json:"email" validate:"omitempty,email"`
-	BirthDate string `json:"birthdate" validate:"omitempty,checkDate"`
-	Nickname  string `json:"nickname" validate:"omitempty,checkNickname"`
-	Bio       string `json:"bio" validate:"omitempty,checkBio"`
-	Location  string `json:"location" validate:"omitempty,checkLocation"`
+	Password  string `json:"password" validate:"omitempty,min=8,max=100,hasUpper,hasSpecialChar,hasSequence,hasCommonWord,hasDigit"`
+	BirthDate string `json:"birthdate" validate:"omitempty,date,dateAfter"`
+	Nickname  string `json:"nickname" validate:"omitempty,nickName"`
+	Bio       string `json:"bio" validate:"omitempty,bio"`
+	Location  string `json:"location" validate:"omitempty,location"`
 }
 
 func (s *Service) EditProfile(w http.ResponseWriter, r *http.Request) {
-	userValid := &UserValid{
-		validate: validator.New(),
-		validErr: make(map[string]string),
-	}
-	updatedProfile := EditUserRequest{}
-	if err := RegisterUsersValidations(userValid); err != nil {
-		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	err := json.NewDecoder(r.Body).Decode(&updatedProfile)
+	req := editUserRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	userID := r.Context().Value("userID").(int)
-	err = updateProfile(&updatedProfile, userID, userValid, s.DB)
+	err = updateProfile(&req, userID, s.DB)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -51,58 +43,95 @@ func (s *Service) EditProfile(w http.ResponseWriter, r *http.Request) {
 	services.ReturnJSON(w, http.StatusOK, message)
 }
 
-func updateProfile(updatedProfile *EditUserRequest, userID int, v *UserValid, s *sql.DB) error {
+func updateProfile(req *editUserRequest, userID int, s *sql.DB) error {
 	var (
-		hashedPassword []byte
-		keys           = []string{}
-		values         = []any{}
+		keys   = []string{}
+		values = []any{}
 	)
-	err := v.validate.Struct(updatedProfile)
-	if err != nil {
+	if err := req.validate(); err != nil {
 		return err
 	}
-	if updatedProfile.Name != "" {
-		values = append(values, updatedProfile.Name)
+	if req.Name != "" {
+		values = append(values, req.Name)
 		keys = append(keys, " name = $"+strconv.Itoa(len(keys)+1))
 	}
-	if updatedProfile.Password != "" {
-		hashedPassword, err = bcrypt.GenerateFromPassword([]byte(updatedProfile.Password), bcrypt.DefaultCost)
+	if req.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
-			fmt.Println(err)
 			return err
 		}
 		values = append(values, string(hashedPassword))
 		keys = append(keys, " password = $"+strconv.Itoa(len(keys)+1))
 	}
-	if updatedProfile.Email != "" {
-		values = append(values, updatedProfile.Email)
+	if req.Email != "" {
+		values = append(values, req.Email)
 		keys = append(keys, " email = $"+strconv.Itoa(len(keys)+1))
 	}
-	if updatedProfile.BirthDate != "" {
-		values = append(values, updatedProfile.BirthDate)
+	if req.BirthDate != "" {
+		values = append(values, req.BirthDate)
 		keys = append(keys, " birthdate = $"+strconv.Itoa(len(keys)+1))
 	}
 
-	if updatedProfile.Nickname != "" {
-		values = append(values, updatedProfile.Nickname)
+	if req.Nickname != "" {
+		values = append(values, req.Nickname)
 		keys = append(keys, " nickname = $"+strconv.Itoa(len(keys)+1))
 	}
-	if updatedProfile.Bio != "" {
-		values = append(values, updatedProfile.Bio)
+	if req.Bio != "" {
+		values = append(values, req.Bio)
 		keys = append(keys, " bio = $"+strconv.Itoa(len(keys)+1))
 	}
 
-	if updatedProfile.Location != "" {
-		values = append(values, updatedProfile.Location)
+	if req.Location != "" {
+		values = append(values, req.Location)
 		keys = append(keys, " location = $"+strconv.Itoa(len(keys)+1))
 
 	}
 	values = append(values, userID)
 	keyString := strings.Join(keys, ", ")
 	query := fmt.Sprintf("UPDATE users_tweeter SET %s WHERE id = $%d", keyString, len(values))
-	_, err = s.Exec(query, values...)
+	_, err := s.Exec(query, values...)
 	if err != nil {
 		return err
 	}
 	return err
+}
+func (s editUserRequest) validateName(fl validator.FieldLevel) bool {
+	return services.NameRegex.MatchString(fl.Field().String())
+}
+
+func (s editUserRequest) validateEmail(fl validator.FieldLevel) bool {
+	_, err := mail.ParseAddress(fl.Field().String())
+	return err == nil
+}
+
+func (s editUserRequest) validate() error {
+	v := validator.New()
+	if err := v.RegisterValidation("checkName", s.validateName); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("email", s.validateEmail); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasUpper", services.ContainsUpper); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasSpecialChar", services.ContainsSpecialChar); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasSequence", services.ContainsSequence); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasCommonWord", services.ContainsCommonWord); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("hasDigit", services.ContainsDigit); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("date", services.CheckDate); err != nil {
+		return err
+	}
+	if err := v.RegisterValidation("dateAfter", services.InThePast); err != nil {
+		return err
+	}
+	return v.Struct(s)
 }

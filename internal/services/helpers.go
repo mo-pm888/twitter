@@ -135,32 +135,11 @@ func ExtractUserIDFromSessionCookie(cookieValue string) (string, error) {
 func ReturnErr(w http.ResponseWriter, err string, code int) {
 	var errj ErrResponse
 	errj.Errtext = err
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errj)
 }
-func CheckEmail(w http.ResponseWriter, email string) {
-	if !emailRegex.MatchString(email) {
-		ReturnErr(w, "Invalid email format", http.StatusBadRequest)
-		return
-	}
-	if len(email) > 320 {
-		ReturnErr(w, "Name exceeds maximum length", http.StatusBadRequest)
-		return
-	}
-}
-func CheckPassword(w http.ResponseWriter, password string) {
-	passwordRegex := regexp.MustCompile(`^[a-zA-Z]+$`)
-	if !passwordRegex.MatchString(password) {
-		ReturnErr(w, "Invalid password format", http.StatusBadRequest)
-		return
-	}
-	if len(password) > 100 {
-		ReturnErr(w, "Password exceeds maximum length", http.StatusBadRequest)
-		return
-	}
-}
+
 func ReturnJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
