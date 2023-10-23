@@ -1,12 +1,14 @@
 package users
 
 import (
-	"github.com/go-playground/validator/v10"
+	"fmt"
 	"net/mail"
 	"regexp"
 	"strings"
 	"time"
 	"unicode"
+
+	"github.com/go-playground/validator/v10"
 )
 
 const (
@@ -67,11 +69,9 @@ func CheckPassword(fl validator.FieldLevel, v *UserValid) bool {
 	password := fl.Field().String()
 	if len(password) < minNameLength {
 		v.validErr["password"] += "short,"
-		return false
 	}
 	if len(password) > maxNameLength {
 		v.validErr["password"] += "long,"
-		return false
 	}
 
 	if !HasUpper(password) {
@@ -102,7 +102,7 @@ func CheckDate(fl validator.FieldLevel, v *UserValid) bool {
 	currentDate := time.Now()
 	if date.After(currentDate) {
 		v.validErr["data"] += "date is after current date"
-		return true
+		return false
 	}
 
 	return true
@@ -131,6 +131,7 @@ func CheckNickName(fl validator.FieldLevel, v *UserValid) bool {
 	nickname := fl.Field().String()
 	if len(nickname) > maxNameLength {
 		v.validErr["nickname"] = "long"
+		return false
 	}
 	return true
 
@@ -138,6 +139,7 @@ func CheckNickName(fl validator.FieldLevel, v *UserValid) bool {
 func CheckBio(fl validator.FieldLevel, v *UserValid) bool {
 	if len(fl.Field().String()) > maxlengthBio {
 		v.validErr["bio"] = "long"
+		return false
 	}
 	return true
 
@@ -153,6 +155,7 @@ func CheckLocation(fl validator.FieldLevel, v *UserValid) bool {
 func CheckEmailVal(fl validator.FieldLevel, v *UserValid) bool {
 	email := fl.Field().String()
 	_, err := mail.ParseAddress(email)
+	fmt.Println(err)
 	if err != nil {
 		v.validErr["email"] = "not correct email"
 		return false

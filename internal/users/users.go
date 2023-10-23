@@ -1,7 +1,6 @@
 package users
 
 import (
-	"context"
 	"crypto/rand"
 	"database/sql"
 	"encoding/base64"
@@ -15,11 +14,6 @@ import (
 	"Twitter_like_application/internal/services"
 
 	"github.com/go-playground/validator/v10"
-)
-
-const (
-	ctxKeyUserID  = "userID"
-	ctxKeyIsAdmin = "isAdmin"
 )
 
 type UserValid struct {
@@ -40,6 +34,7 @@ func (v *UserValid) Error() string {
 
 	return strings.Join(pairs, "; ")
 }
+
 
 func checkAuth(w http.ResponseWriter, r *http.Request, s *sql.DB) *http.Request {
 	apikey := r.Header.Get("X-API-KEY")

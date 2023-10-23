@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"math/big"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -168,4 +169,19 @@ func ReturnJSON(w http.ResponseWriter, statusCode int, data interface{}) {
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		ReturnErr(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+func GenerateRandomString(length int) (string, error) {
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	charsetLength := big.NewInt(int64(len(charset)))
+
+	randomBytes := make([]byte, length)
+	for i := 0; i < length; i++ {
+		randomIndex, err := rand.Int(rand.Reader, charsetLength)
+		if err != nil {
+			return "", err
+		}
+		randomBytes[i] = charset[randomIndex.Int64()]
+	}
+
+	return string(randomBytes), nil
 }
