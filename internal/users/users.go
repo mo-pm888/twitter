@@ -1,6 +1,7 @@
 package users
 
 import (
+	"context"
 	"crypto/rand"
 	"database/sql"
 	"encoding/base64"
@@ -26,6 +27,11 @@ type NameVal struct {
 	realName bool
 }
 
+const (
+	ctxKeyUserID  = "userID"
+	ctxKeyIsAdmin = "isAdmin"
+)
+
 func (v *UserValid) Error() string {
 	var pairs []string
 	for k, v := range v.validErr {
@@ -34,7 +40,6 @@ func (v *UserValid) Error() string {
 
 	return strings.Join(pairs, "; ")
 }
-
 
 func checkAuth(w http.ResponseWriter, r *http.Request, s *sql.DB) *http.Request {
 	apikey := r.Header.Get("X-API-KEY")
