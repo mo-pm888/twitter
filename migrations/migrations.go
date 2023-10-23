@@ -116,6 +116,12 @@ var items = []darwin.Migration{
 		`,
 	},
 	{
+		Version:     13,
+		Description: `add column`,
+		Script: `alter table tweets add block bool default false not null;
+		`,
+	},
+	{
 		Version:     14,
 		Description: `add column`,
 		Script: `alter table users_tweeter add admin bool default false not null;
