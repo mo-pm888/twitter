@@ -13,6 +13,9 @@ type TestInThePastStruct struct {
 type TestCommonPasswordStruct struct {
 	CommonPassword string `validate:"hasCommonWord"`
 }
+type TestSequenceStruct struct {
+	SequencePassword string `validate:"hasSequence"`
+}
 type TestDigitStruct struct {
 	DigitPassword string `validate:"hasDigit"`
 }
@@ -94,6 +97,47 @@ func TestContainsCommonWord(t *testing.T) {
 			name: "Contains Common Word password fail",
 			data: TestCommonPasswordStruct{CommonPassword: "password4321"},
 			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := v.Struct(tt.data); (err == nil) != tt.want {
+				t.Errorf("InThePast() = %v, want %v", (err == nil), tt.want)
+			}
+		})
+	}
+}
+func TestContainsSequence(t *testing.T) {
+	v := validator.New()
+
+	if err := v.RegisterValidation("hasSequence", ContainsSequence); err != nil {
+		t.Error(err)
+	}
+	tests := []struct {
+		name string
+		data TestSequenceStruct
+		want bool
+	}{
+		{
+			name: "Sequence Password ok",
+			data: TestSequenceStruct{SequencePassword: "dknfkglnfk!"},
+			want: false,
+		},
+		{
+			name: "Sequence Password fail 123",
+			data: TestSequenceStruct{SequencePassword: "dknfkglnfk!123"},
+			want: true,
+		},
+		{
+			name: "Sequence Password abc fail",
+			data: TestSequenceStruct{SequencePassword: "abcdknfkglnfk!"},
+			want: true,
+		},
+		{
+			name: "Sequence Password xyz fail ",
+			data: TestSequenceStruct{SequencePassword: "abcdknfkglnfkxyz!"},
+			want: true,
 		},
 	}
 

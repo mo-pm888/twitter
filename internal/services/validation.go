@@ -11,12 +11,21 @@ import (
 
 var (
 	commonWords = []string{"password", "12345678", "87654321", "qwerty123"}
+	sequences   = []string{"123", "abc", "xyz"}
 	NameRegex   = regexp.MustCompile("^[\\p{L}\\s]+$")
 )
 
 func ContainsDigit(fl validator.FieldLevel) bool {
 	for _, char := range fl.Field().String() {
 		if unicode.IsDigit(char) {
+			return true
+		}
+	}
+	return false
+}
+func ContainsSequence(fl validator.FieldLevel) bool {
+	for _, sequence := range sequences {
+		if strings.Contains(fl.Field().String(), sequence) {
 			return true
 		}
 	}
