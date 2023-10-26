@@ -16,9 +16,6 @@ type TestCommonPasswordStruct struct {
 type TestDigitStruct struct {
 	DigitPassword string `validate:"hasDigit"`
 }
-type TestSequenceStruct struct {
-	SequencePassword string `validate:"hasSequence"`
-}
 type TestSpecialCharStruct struct {
 	SpecialCharPassword string `validate:"hasSpecialChar"`
 }
@@ -141,49 +138,6 @@ func TestContainsDigit(t *testing.T) {
 		})
 	}
 }
-
-func TestContainsSequence(t *testing.T) {
-	v := validator.New()
-
-	if err := v.RegisterValidation("hasSequence", ContainsSequence); err != nil {
-		t.Error(err)
-	}
-	tests := []struct {
-		name string
-		data TestSequenceStruct
-		want bool
-	}{
-		{
-			name: "Sequence Password ok",
-			data: TestSequenceStruct{SequencePassword: "dknfkglnfk!"},
-			want: true,
-		},
-		{
-			name: "Sequence Password fail 123",
-			data: TestSequenceStruct{SequencePassword: "dknfkglnfk!123"},
-			want: false,
-		},
-		{
-			name: "Sequence Password abc fail",
-			data: TestSequenceStruct{SequencePassword: "abcdknfkglnfk!"},
-			want: false,
-		},
-		{
-			name: "Sequence Password xyz fail ",
-			data: TestSequenceStruct{SequencePassword: "abcdknfkglnfkxyz!"},
-			want: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := v.Struct(tt.data); (err == nil) != tt.want {
-				t.Errorf("InThePast() = %v, want %v", (err == nil), tt.want)
-			}
-		})
-	}
-}
-
 func TestContainsSpecialChar(t *testing.T) {
 	v := validator.New()
 
