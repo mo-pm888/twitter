@@ -11,7 +11,6 @@ import (
 
 var (
 	commonWords = []string{"password", "12345678", "87654321", "qwerty123"}
-	sequences   = []string{"123", "abc", "xyz"}
 	NameRegex   = regexp.MustCompile("^[\\p{L}\\s]+$")
 )
 
@@ -27,15 +26,6 @@ func ContainsDigit(fl validator.FieldLevel) bool {
 func ContainsCommonWord(fl validator.FieldLevel) bool {
 	for _, word := range commonWords {
 		if strings.Contains(fl.Field().String(), word) {
-			return false
-		}
-	}
-	return true
-}
-
-func ContainsSequence(fl validator.FieldLevel) bool {
-	for _, sequence := range sequences {
-		if strings.Contains(fl.Field().String(), sequence) {
 			return false
 		}
 	}

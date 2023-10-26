@@ -105,9 +105,6 @@ func (s createUserRequest) validate() error {
 	if err := v.RegisterValidation("hasSpecialChar", services.ContainsSpecialChar); err != nil {
 		return err
 	}
-	if err := v.RegisterValidation("hasSequence", services.ContainsSequence); err != nil {
-		return err
-	}
 	if err := v.RegisterValidation("hasCommonWord", services.ContainsCommonWord); err != nil {
 		return err
 	}

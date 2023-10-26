@@ -12,16 +12,18 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const maxLengthTweet = 400
-
 type createTweetRequest struct {
-	Text string `json:"text" validate:"required,text"`
+	Text string `json:"text" validate:"required,max=400"`
 	Visibility
+}
+
+var DefaultVisibility = Visibility{
+	Public: true,
 }
 
 func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 	req := createTweetRequest{}
-	userID := r.Context().Value("userID").(int)
+	userID := r.Context().Value("u`serID").(int)
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		services.ReturnErr(w, err.Error(), http.StatusBadRequest)
@@ -41,14 +43,8 @@ func (s *Service) CreateNewTweet(req createTweetRequest, ctx context.Context, pa
 		return err
 	}
 	userID := ctx.Value("userID").(int)
-	if !req.isValid() {
-		return errors.New("visibility error, many visual arguments")
-	}
 	if req.defaultVisibilities() {
-		req.Visibility.Public = true
-		req.Visibility.OnlyMe = false
-		req.Visibility.OnlyFollowers = false
-		req.Visibility.OnlyMutualFollowers = false
+		req.Visibility = DefaultVisibility
 	}
 	query := `INSERT INTO tweets (user_id, text, created_at,parent_tweet_id, public, only_followers, only_mutual_followers, only_me)
 		VALUES ($1, $2, $3, $4, $5, $6, $7,$8)`
@@ -59,14 +55,10 @@ func (s *Service) CreateNewTweet(req createTweetRequest, ctx context.Context, pa
 
 }
 
-func (s createTweetRequest) validateText(fl validator.FieldLevel) bool {
-	return len(fl.Field().String()) < maxLengthTweet
-}
-
 func (s createTweetRequest) validate() error {
 	v := validator.New()
-	if err := v.RegisterValidation("text", s.validateText); err != nil {
-		return err
+	if !s.Visibility.isValid() {
+		return errors.New("visibility error, many visual arguments")
 	}
 	return v.Struct(s)
 }

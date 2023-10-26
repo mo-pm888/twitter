@@ -15,15 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type editUserRequest struct {
-	Name      string `json:"name" validate:"omitempty,max=100,checkName"`
-	Email     string `json:"email" validate:"omitempty,email"`
-	Password  string `json:"password" validate:"omitempty,min=8,max=100,hasUpper,hasSpecialChar,hasSequence,hasCommonWord,hasDigit"`
-	BirthDate string `json:"birthdate" validate:"omitempty,date,dateAfter"`
-	Nickname  string `json:"nickname" validate:"omitempty,nickName"`
-	Bio       string `json:"bio" validate:"omitempty,bio"`
-	Location  string `json:"location" validate:"omitempty,location"`
-}
+type editUserRequest createUserRequest
 
 func (s *Service) EditProfile(w http.ResponseWriter, r *http.Request) {
 	req := editUserRequest{}
@@ -116,9 +108,6 @@ func (s editUserRequest) validate() error {
 		return err
 	}
 	if err := v.RegisterValidation("hasSpecialChar", services.ContainsSpecialChar); err != nil {
-		return err
-	}
-	if err := v.RegisterValidation("hasSequence", services.ContainsSequence); err != nil {
 		return err
 	}
 	if err := v.RegisterValidation("hasCommonWord", services.ContainsCommonWord); err != nil {
