@@ -108,7 +108,7 @@ func TestContainsCommonWord(t *testing.T) {
 		})
 	}
 }
-func TestContainsSequence(t *testing.T) {
+func TestNoContainsSequence(t *testing.T) {
 	v := validator.New()
 
 	if err := v.RegisterValidation("hasSequence", NoContainsSequence); err != nil {
@@ -122,22 +122,22 @@ func TestContainsSequence(t *testing.T) {
 		{
 			name: "Sequence Password ok",
 			data: TestSequenceStruct{SequencePassword: "dknfkglnfk!"},
-			want: false,
+			want: true,
 		},
 		{
 			name: "Sequence Password fail 123",
 			data: TestSequenceStruct{SequencePassword: "dknfkglnfk!123"},
-			want: true,
+			want: false,
 		},
 		{
 			name: "Sequence Password abc fail",
 			data: TestSequenceStruct{SequencePassword: "abcdknfkglnfk!"},
-			want: true,
+			want: false,
 		},
 		{
 			name: "Sequence Password xyz fail ",
 			data: TestSequenceStruct{SequencePassword: "abcdknfkglnfkxyz!"},
-			want: true,
+			want: false,
 		},
 	}
 
