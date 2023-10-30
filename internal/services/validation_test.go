@@ -111,7 +111,7 @@ func TestContainsCommonWord(t *testing.T) {
 func TestContainsSequence(t *testing.T) {
 	v := validator.New()
 
-	if err := v.RegisterValidation("hasSequence", ContainsSequence); err != nil {
+	if err := v.RegisterValidation("hasSequence", NoContainsSequence); err != nil {
 		t.Error(err)
 	}
 	tests := []struct {

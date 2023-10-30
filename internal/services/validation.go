@@ -23,7 +23,7 @@ func ContainsDigit(fl validator.FieldLevel) bool {
 	}
 	return false
 }
-func ContainsSequence(fl validator.FieldLevel) bool {
+func NoContainsSequence(fl validator.FieldLevel) bool {
 	for _, sequence := range sequences {
 		if strings.Contains(fl.Field().String(), sequence) {
 			return true

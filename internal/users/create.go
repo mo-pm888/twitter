@@ -117,5 +117,8 @@ func (s createUserRequest) validate() error {
 	if err := v.RegisterValidation("inThePast", services.InThePast); err != nil {
 		return err
 	}
+	if err := v.RegisterValidation("hasSequence", services.NoContainsSequence); err != nil {
+		return err
+	}
 	return v.Struct(s)
 }
