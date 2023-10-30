@@ -1,6 +1,7 @@
 package users
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -14,6 +15,8 @@ func Test_createUserRequest_validate(t *testing.T) {
 		}
 
 		if err := r.validate(); err != nil {
+			fmt.Println(err)
+			fmt.Println("")
 			t.Errorf("expect: err==nil, got: %s", err)
 		}
 	})

@@ -26,10 +26,10 @@ func ContainsDigit(fl validator.FieldLevel) bool {
 func NoContainsSequence(fl validator.FieldLevel) bool {
 	for _, sequence := range sequences {
 		if strings.Contains(fl.Field().String(), sequence) {
-			return true
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 func ContainsCommonWord(fl validator.FieldLevel) bool {

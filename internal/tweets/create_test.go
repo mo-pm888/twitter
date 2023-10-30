@@ -15,7 +15,7 @@ func Test_createTweetRequest_validate(t *testing.T) {
 
 	})
 	t.Run("text_fail", func(t *testing.T) {
-		expectedErrorSubstring := "Key: 'createTweetRequest.Text' Error:Field validation for 'Text' failed on the 'text' tag"
+		expectedErrorSubstring := "Key: 'createTweetRequest.Text' Error:Field validation for 'Text' failed on the 'max' tag"
 		r := createTweetRequest{
 			Text: "text vmropbmrpobmrtopbmtpomboptmbpotmboptmpobmtpobmptombpotmbpomtpobmtpombpotmbpomtpobmspotmboptmbpot,rgpa,mbpomtbapomtbpmtbopsmtbpomtpobmtpombpotmbopaalrgmaoprbmoptmbnportsnmbpoisnrmt[pbonsmtpo[bnmspotinbmsiotnbmsintbopisnmbiookdfsefrlkngklrglrmepaomtrpobmpondgsgastkgjnstrlkhjoirwhjoistjrhgoi'sjtoi'nbsoitnboisntbionatoigbnstoinboistnboisntboinstoibnsoitnboistnboisntobinsoitbnoistnboinboistnboisntoibnsoirtbnosirntb[santdfgaerngaioenroinaeroibnorinboaienboisnrboianrobinreoibnoitnb[po",
 		}
